@@ -6,6 +6,7 @@
 use crate::modbus;
 
 use std::{
+    error::Error as StdError,
     io::{ErrorKind, Write},
     time::Duration,
 };
@@ -100,6 +101,30 @@ fn credential_url(app: &AppHandle) -> Result<tauri::Url, String> {
         .map_err(|_| "文件名转url失败".to_string())
 }
 
+fn is_missing_file(error: &(dyn StdError + 'static)) -> bool {
+    let mut source = Some(error);
+    while let Some(current) = source {
+        if let Some(io_error) = current.downcast_ref::<std::io::Error>() {
+            let raw_os_error = io_error.raw_os_error();
+            if io_error.kind() == ErrorKind::NotFound
+                || raw_os_error == Some(2)
+                || (cfg!(windows) && raw_os_error == Some(3))
+            {
+                return true;
+            }
+        }
+        source = current.source();
+    }
+
+    let message = error.to_string().to_ascii_lowercase();
+    message.contains("enoent")
+        || message.contains("no such file")
+        || message.contains("file not found")
+        || message.contains("cannot find the path")
+        || message.contains("os error 2")
+        || (cfg!(windows) && message.contains("os error 3"))
+}
+
 fn load_credentials(
     app: &AppHandle,
     platform: NetworkPlatform,
@@ -107,7 +132,7 @@ fn load_credentials(
     let url = credential_url(app)?;
     let bytes = match app.fs().read(url) {
         Ok(bytes) => bytes,
-        Err(error) if error.kind() == ErrorKind::NotFound => return Ok(None),
+        Err(error) if is_missing_file(&error) => return Ok(None),
         Err(error) => return Err(format!("读取文件失败: {error}")),
     };
     let header = CREDENTIAL_MAGIC.len() + 12;
