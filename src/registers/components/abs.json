@@ -1,0 +1,546 @@
+{
+    "coilReadBlocks": [],
+    "categories": {
+        "identity": {
+            "name": "设备信息",
+            "registers": [
+                0,
+                2,
+                4,
+                6
+            ],
+            "coils": []
+        },
+        "diagnostics": {
+            "name": "故障与控制",
+            "registers": [
+                24,
+                25
+            ],
+            "coils": []
+        },
+        "speed": {
+            "name": "车辆速度",
+            "registers": [
+                30,
+                32,
+                34
+            ],
+            "coils": []
+        },
+        "voltage": {
+            "name": "电压监测",
+            "registers": [
+                60,
+                62,
+                64,
+                66,
+                68,
+                70,
+                72,
+                74,
+                76,
+                78,
+                80,
+                82,
+                84,
+                86,
+                88,
+                90,
+                92,
+                94,
+                96,
+                98,
+                100,
+                102
+            ],
+            "coils": []
+        }
+    },
+    "name": "ABS",
+    "deviceAddress": 6,
+    "readBlocks": [
+        {
+            "start": 0,
+            "count": 8
+        },
+        {
+            "start": 24,
+            "count": 2
+        },
+        {
+            "start": 30,
+            "count": 6
+        },
+        {
+            "start": 60,
+            "count": 44
+        }
+    ],
+    "coils": {},
+    "id": "abs",
+    "registers": {
+        "0": {
+            "bytes": 4,
+            "writable": false,
+            "label": "ABS产品标识",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "2": {
+            "bytes": 4,
+            "writable": false,
+            "label": "软件版本号",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "4": {
+            "bytes": 4,
+            "writable": false,
+            "label": "BOOT版本号",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "6": {
+            "bytes": 4,
+            "writable": false,
+            "label": "硬件版本号",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "24": {
+            "bytes": 2,
+            "writable": false,
+            "label": "故障码",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "25": {
+            "bytes": 2,
+            "writable": true,
+            "label": "ABS使能控制",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "select",
+                    "value": null,
+                    "options": [
+                        {
+                            "value": 0,
+                            "label": "ABS全使能"
+                        },
+                        {
+                            "value": 1,
+                            "label": "仅前ABS使能"
+                        },
+                        {
+                            "value": 2,
+                            "label": "仅后ABS使能"
+                        },
+                        {
+                            "value": 3,
+                            "label": "ABS全关闭"
+                        }
+                    ]
+                }
+            ]
+        },
+        "30": {
+            "bytes": 4,
+            "writable": false,
+            "label": "车辆前轮轮速",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_u32",
+                    "unit": "Km/h"
+                }
+            ]
+        },
+        "32": {
+            "bytes": 4,
+            "writable": false,
+            "label": "车辆后轮轮速",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_u32",
+                    "unit": "Km/h"
+                }
+            ]
+        },
+        "34": {
+            "bytes": 4,
+            "writable": false,
+            "label": "车辆整车的时速",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_u32",
+                    "unit": "Km/h"
+                }
+            ]
+        },
+        "60": {
+            "bytes": 4,
+            "writable": false,
+            "label": "3.3V设计电压的实际读出电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "62": {
+            "bytes": 4,
+            "writable": false,
+            "label": "5V设计电压的实际读出电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "64": {
+            "bytes": 4,
+            "writable": false,
+            "label": "数字输入12V电压的实际读出电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "66": {
+            "bytes": 4,
+            "writable": false,
+            "label": "功率输入12V电压的实际读出电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "68": {
+            "bytes": 4,
+            "writable": false,
+            "label": "前轮传感器关断低边电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "70": {
+            "bytes": 4,
+            "writable": false,
+            "label": "后轮传感器关断低边电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "72": {
+            "bytes": 4,
+            "writable": false,
+            "label": "功率主MOS关断时电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "74": {
+            "bytes": 4,
+            "writable": false,
+            "label": "功率主MOS关断时高边电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "76": {
+            "bytes": 4,
+            "writable": false,
+            "label": "前轮传感器打开低边电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "78": {
+            "bytes": 4,
+            "writable": false,
+            "label": "后轮传感器打开低边电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "80": {
+            "bytes": 4,
+            "writable": false,
+            "label": "功率主MOS打开时电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "82": {
+            "bytes": 4,
+            "writable": false,
+            "label": "功率主MOS打开时高边电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "84": {
+            "bytes": 4,
+            "writable": false,
+            "label": "电机测试时高边电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "86": {
+            "bytes": 4,
+            "writable": false,
+            "label": "电机测试时功率电源电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "88": {
+            "bytes": 4,
+            "writable": false,
+            "label": "后轮出油阀测试时高边电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "90": {
+            "bytes": 4,
+            "writable": false,
+            "label": "后轮出油阀测试时功率电源电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "92": {
+            "bytes": 4,
+            "writable": false,
+            "label": "后轮进油阀测试时高边电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "94": {
+            "bytes": 4,
+            "writable": false,
+            "label": "后轮进油阀测试时功率电源电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "96": {
+            "bytes": 4,
+            "writable": false,
+            "label": "前轮进油阀测试时高边电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "98": {
+            "bytes": 4,
+            "writable": false,
+            "label": "前轮进油阀测试时功率电源电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "100": {
+            "bytes": 4,
+            "writable": false,
+            "label": "前轮出油阀测试时高边电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        },
+        "102": {
+            "bytes": 4,
+            "writable": false,
+            "label": "前轮出油阀测试时功率电源电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "codec": "little_f32",
+                    "unit": "V",
+                    "precision": 2
+                }
+            ]
+        }
+    }
+}

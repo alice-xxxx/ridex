@@ -1,0 +1,1111 @@
+{
+    "coilReadBlocks": [
+        {
+            "start": 1,
+            "count": 1
+        },
+        {
+            "start": 6,
+            "count": 1
+        },
+        {
+            "start": 8,
+            "count": 4
+        },
+        {
+            "start": 15,
+            "count": 1
+        },
+        {
+            "start": 17,
+            "count": 1
+        },
+        {
+            "start": 24,
+            "count": 16
+        },
+        {
+            "start": 41,
+            "count": 1
+        },
+        {
+            "start": 100,
+            "count": 4
+        }
+    ],
+    "categories": {
+        "switches": {
+            "name": "功能开关",
+            "registers": [],
+            "coils": [
+                1,
+                6,
+                8,
+                9,
+                10,
+                11,
+                15,
+                17,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                41,
+                100,
+                101,
+                102,
+                103
+            ]
+        },
+        "identity": {
+            "name": "设备信息",
+            "registers": [
+                1,
+                9,
+                17,
+                25,
+                26,
+                27,
+                28,
+                30,
+                31,
+                32,
+                33,
+                34
+            ],
+            "coils": []
+        },
+        "control": {
+            "name": "设备控制",
+            "registers": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+            ],
+            "coils": []
+        },
+        "diagnostics": {
+            "name": "诊断与扩展",
+            "registers": [
+                100,
+                106,
+                108,
+                110,
+                112,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                133,
+                136,
+                137,
+                138,
+                142,
+                143,
+                144,
+                145,
+                146
+            ],
+            "coils": []
+        }
+    },
+    "name": "蓝牙报警器",
+    "deviceAddress": 4,
+    "readBlocks": [
+        {
+            "start": 1,
+            "count": 28
+        },
+        {
+            "start": 30,
+            "count": 13
+        },
+        {
+            "start": 100,
+            "count": 4
+        },
+        {
+            "start": 106,
+            "count": 8
+        },
+        {
+            "start": 120,
+            "count": 29
+        }
+    ],
+    "coils": {
+        "1": {
+            "bytes": 1,
+            "writable": true,
+            "label": "开启无感解锁",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "6": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆熄火后自动设防",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "8": {
+            "bytes": 1,
+            "writable": true,
+            "label": "启动或停止车辆",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "9": {
+            "bytes": 1,
+            "writable": true,
+            "label": "单次设防",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "10": {
+            "bytes": 1,
+            "writable": true,
+            "label": "寻车鸣笛",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "11": {
+            "bytes": 1,
+            "writable": true,
+            "label": "开坐桶锁",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "15": {
+            "bytes": 1,
+            "writable": true,
+            "label": "启动BLE蓝牙配对绑定",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "17": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆超时后自动熄火",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "24": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆启动声音允许播放或禁止播放",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "25": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆熄火声音允许播放或禁止播放",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "26": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆设防声音允许播放或禁止播放",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "27": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆撤防声音允许播放或禁止播放",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "28": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆设防情况下，车辆发生异常时的报警声音允许播放或禁止播放",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "29": {
+            "bytes": 1,
+            "writable": true,
+            "label": "坐垫上有人时，自动启动车辆",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "30": {
+            "bytes": 1,
+            "writable": true,
+            "label": "转向灯自动关闭",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "31": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆具有播放手机音乐的功能",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "32": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆具有来电提醒的功能",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "33": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆具有摔倒提醒的功能",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "34": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆的转向灯声音，允许播放或禁止播放",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "35": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆与手机间的蓝牙常连模式（目前只适用于经典蓝牙（无感解锁2.0）。当车辆发现和手机断开后，主动重连手机，直到连接成功）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "36": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆的“请关闭坐垫”声音允许播放或禁止播放",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "37": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆边撑缩回车身后，启动车辆",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "38": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆边撑支撑车辆后，熄火车辆",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "39": {
+            "bytes": 1,
+            "writable": true,
+            "label": "删除车辆已经保存的所有手机的蓝牙配对信息（包括低功耗蓝牙、经典蓝牙）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "41": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆换电时，播放提示音，告知车主“换电切勿关座桶”",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "100": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆学习NFC卡",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "101": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆蓝牙的静默通信模式（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "102": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆的经典蓝牙（BR/EDR）配对",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "103": {
+            "bytes": 1,
+            "writable": true,
+            "label": "车辆蓝牙进行硬件自检、软件自检（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        }
+    },
+    "id": "ble",
+    "registers": {
+        "1": {
+            "bytes": 16,
+            "writable": true,
+            "label": "产品序列号（简称SN）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "text",
+                    "value": null
+                }
+            ]
+        },
+        "9": {
+            "bytes": 16,
+            "writable": false,
+            "label": "设备编号（简称PN）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "text",
+                    "value": null
+                }
+            ]
+        },
+        "17": {
+            "bytes": 16,
+            "writable": false,
+            "label": "IMEI【注】只有“蓝牙+4G”中控提供，单蓝牙设备不提供",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "text",
+                    "value": null
+                }
+            ]
+        },
+        "25": {
+            "bytes": 2,
+            "writable": false,
+            "label": "蓝牙电子产品的硬件版本",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "26": {
+            "bytes": 2,
+            "writable": false,
+            "label": "蓝牙电子产品的软件版本",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "27": {
+            "bytes": 2,
+            "writable": false,
+            "label": "蓝牙电子产品的硬件版本",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "28": {
+            "bytes": 2,
+            "writable": false,
+            "label": "蓝牙电子产品的软件版本",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "30": {
+            "bytes": 2,
+            "writable": true,
+            "label": "蓝牙无感解锁时，手机和车辆的距离",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "31": {
+            "bytes": 2,
+            "writable": true,
+            "label": "自动设防的延时时间长度，单位是秒",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "32": {
+            "bytes": 2,
+            "writable": true,
+            "label": "车辆自动关机的时间长度，单位是分钟",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "33": {
+            "bytes": 2,
+            "writable": false,
+            "label": "车辆的电池电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "34": {
+            "bytes": 2,
+            "writable": false,
+            "label": "设备定位所使用的卫星个数。【注】只有“蓝牙+4G”中控提供，单蓝牙设备不提供",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "35": {
+            "bytes": 2,
+            "writable": true,
+            "label": "放下边撑，车辆延时多长时间后熄火",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "36": {
+            "bytes": 2,
+            "writable": true,
+            "label": "车辆发生了按钮事件（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "37": {
+            "bytes": 2,
+            "writable": true,
+            "label": "对蓝牙报警器设备，执行软件重启（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "38": {
+            "bytes": 2,
+            "writable": true,
+            "label": "启动本地OTA升级（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "39": {
+            "bytes": 2,
+            "writable": false,
+            "label": "本地OTA主机状态码（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "40": {
+            "bytes": 2,
+            "writable": false,
+            "label": "对端设备返回的错误码（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "41": {
+            "bytes": 2,
+            "writable": false,
+            "label": "本地OTA进度（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "42": {
+            "bytes": 2,
+            "writable": true,
+            "label": "人离开车辆座位，车辆延时多长时间后熄火",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "100": {
+            "bytes": 8,
+            "writable": true,
+            "label": "当前日期、时间",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "datetime",
+                    "value": null
+                }
+            ]
+        },
+        "106": {
+            "bytes": 4,
+            "writable": true,
+            "label": "第1组NFC卡的密码。数组。",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "108": {
+            "bytes": 4,
+            "writable": true,
+            "label": "第2组NFC卡的密码。数组。",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "110": {
+            "bytes": 4,
+            "writable": true,
+            "label": "第3组NFC卡的密码。数组。",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "112": {
+            "bytes": 4,
+            "writable": true,
+            "label": "第4组NFC卡的密码。数组。",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "120": {
+            "bytes": 2,
+            "writable": true,
+            "label": "播放车辆内部存储的指定序号的声音",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "121": {
+            "bytes": 2,
+            "writable": true,
+            "label": "车辆播放声音时的音量大小",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "122": {
+            "bytes": 2,
+            "writable": false,
+            "label": "故障码1（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "123": {
+            "bytes": 2,
+            "writable": false,
+            "label": "故障码2（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "124": {
+            "bytes": 2,
+            "writable": false,
+            "label": "故障码3（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "125": {
+            "bytes": 2,
+            "writable": false,
+            "label": "故障码4（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "126": {
+            "bytes": 2,
+            "writable": false,
+            "label": "故障码5（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "127": {
+            "bytes": 2,
+            "writable": false,
+            "label": "故障码6（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "128": {
+            "bytes": 2,
+            "writable": false,
+            "label": "故障码7（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "129": {
+            "bytes": 2,
+            "writable": false,
+            "label": "故障码8（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "130": {
+            "bytes": 6,
+            "writable": false,
+            "label": "车辆经典蓝牙配对时，保存的手机的蓝牙MAC地址。",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "133": {
+            "bytes": 6,
+            "writable": false,
+            "label": "车辆低功耗蓝牙配对时，保存的手机的蓝牙MAC地址。",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "136": {
+            "bytes": 2,
+            "writable": true,
+            "label": "车辆震动的灵敏度",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "137": {
+            "bytes": 2,
+            "writable": true,
+            "label": "车辆摔倒的灵敏度",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "138": {
+            "bytes": 8,
+            "writable": false,
+            "label": "内部周期性通信的数据（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "142": {
+            "bytes": 2,
+            "writable": false,
+            "label": "Flash芯片chip-id（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "143": {
+            "bytes": 2,
+            "writable": false,
+            "label": "Flash芯片存储大小（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "144": {
+            "bytes": 2,
+            "writable": false,
+            "label": "NFC芯片debug标志（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "145": {
+            "bytes": 2,
+            "writable": false,
+            "label": "BLE定时广播重启标志（测试专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null
+                }
+            ]
+        },
+        "146": {
+            "bytes": 6,
+            "writable": true,
+            "label": "车辆的蓝牙MAC地址（是经典蓝牙和低功耗蓝牙的二合一原始MAC地址）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        }
+    }
+}

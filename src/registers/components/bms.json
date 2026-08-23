@@ -1,0 +1,2480 @@
+{
+    "coilReadBlocks": [
+        {
+            "start": 0,
+            "count": 65
+        }
+    ],
+    "categories": {
+        "protection": {
+            "name": "保护状态",
+            "registers": [],
+            "coils": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+            ]
+        },
+        "status": {
+            "name": "电池状态",
+            "registers": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+            ],
+            "coils": []
+        },
+        "identity": {
+            "name": "设备信息",
+            "registers": [
+                1000,
+                1008,
+                1016,
+                1017,
+                1018,
+                1019,
+                1020,
+                1028
+            ],
+            "coils": []
+        },
+        "settings": {
+            "name": "保护参数",
+            "registers": [
+                1053,
+                1054,
+                1055,
+                1056,
+                1057,
+                1058,
+                1059,
+                1060,
+                1061,
+                1062,
+                1063,
+                1064,
+                1065,
+                1066,
+                1067,
+                1068,
+                1069,
+                1070,
+                1071,
+                1072,
+                1073,
+                1074,
+                1075,
+                1076,
+                1077,
+                1078,
+                1079,
+                1080,
+                1081,
+                1082,
+                1083,
+                1084,
+                1085,
+                1086,
+                1087,
+                1088,
+                1089,
+                1090,
+                1091
+            ],
+            "coils": []
+        }
+    },
+    "name": "BMS",
+    "deviceAddress": 1,
+    "readBlocks": [
+        {
+            "start": 0,
+            "count": 33
+        },
+        {
+            "start": 100,
+            "count": 6
+        },
+        {
+            "start": 108,
+            "count": 8
+        },
+        {
+            "start": 1000,
+            "count": 36
+        },
+        {
+            "start": 1053,
+            "count": 39
+        }
+    ],
+    "coils": {
+        "0": {
+            "bytes": 1,
+            "writable": true,
+            "label": "BMS系统复位",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "1": {
+            "bytes": 1,
+            "writable": false,
+            "label": "电芯压差过大",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "2": {
+            "bytes": 1,
+            "writable": false,
+            "label": "充电过流",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "3": {
+            "bytes": 1,
+            "writable": false,
+            "label": "放电过流",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "4": {
+            "bytes": 1,
+            "writable": false,
+            "label": "短路保护",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "5": {
+            "bytes": 1,
+            "writable": false,
+            "label": "充电高温保护",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "6": {
+            "bytes": 1,
+            "writable": false,
+            "label": "放电高温保护",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "7": {
+            "bytes": 1,
+            "writable": false,
+            "label": "充电低温保护",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "8": {
+            "bytes": 1,
+            "writable": false,
+            "label": "放电低温保护",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "9": {
+            "bytes": 1,
+            "writable": false,
+            "label": "充电 MOS 损坏",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "10": {
+            "bytes": 1,
+            "writable": false,
+            "label": "放电 MOS 损坏",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "11": {
+            "bytes": 1,
+            "writable": false,
+            "label": "内部通讯异常",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "12": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第1串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "13": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第2串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "14": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第3串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "15": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第4串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "16": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第5串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "17": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第6串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "18": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第7串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "19": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第8串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "20": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第9串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "21": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第10串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "22": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第11串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "23": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第12串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "24": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第13串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "25": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第14串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "26": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第15串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "27": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第16串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "28": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第17串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "29": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第18串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "30": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第19串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "31": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第20串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "32": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第1串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "33": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第2串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "34": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第3串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "35": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第4串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "36": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第5串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "37": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第6串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "38": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第7串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "39": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第8串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "40": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第9串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "41": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第10串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "42": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第11串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "43": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第12串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "44": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第13串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "45": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第14串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "46": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第15串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "47": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第16串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "48": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第17串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "49": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第18串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "50": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第19串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "51": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第20串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "52": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第21串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "53": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第22串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "54": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第23串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "55": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过充电压保护：第24串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "56": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第21串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "57": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第22串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "58": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第23串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "59": {
+            "bytes": 1,
+            "writable": false,
+            "label": "过放电压保护：第24串电芯",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "60": {
+            "bytes": 1,
+            "writable": false,
+            "label": "整个锂电池过压保护",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "61": {
+            "bytes": 1,
+            "writable": false,
+            "label": "整个锂电池欠压保护",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "62": {
+            "bytes": 1,
+            "writable": false,
+            "label": "锂电池低于某个电量百分比时，锂电池主动保护",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "63": {
+            "bytes": 1,
+            "writable": false,
+            "label": "充电指示",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        },
+        "64": {
+            "bytes": 1,
+            "writable": true,
+            "label": "停止充电",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "switch",
+                    "on": "开启",
+                    "off": "关闭",
+                    "value": null
+                }
+            ]
+        }
+    },
+    "id": "bms",
+    "registers": {
+        "0": {
+            "bytes": 2,
+            "writable": false,
+            "label": "电池包实际总电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.01,
+                    "precision": 2
+                }
+            ]
+        },
+        "1": {
+            "bytes": 2,
+            "writable": false,
+            "label": "电芯数量",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "个"
+                }
+            ]
+        },
+        "2": {
+            "bytes": 2,
+            "writable": false,
+            "label": "电量百分比（简称SOC）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "%",
+                    "min": 0,
+                    "max": 100
+                }
+            ]
+        },
+        "3": {
+            "bytes": 2,
+            "writable": false,
+            "label": "锂电池剩余容量 (可能会少于设计容量)",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "Ah",
+                    "scale": 0.01,
+                    "precision": 2
+                }
+            ]
+        },
+        "4": {
+            "bytes": 2,
+            "writable": false,
+            "label": "电池健康度（简称SOH）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "%",
+                    "min": 0,
+                    "max": 100
+                }
+            ]
+        },
+        "5": {
+            "bytes": 2,
+            "writable": false,
+            "label": "充电电流",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "A",
+                    "scale": 0.01,
+                    "precision": 2,
+                    "codec": "signed_integer"
+                }
+            ]
+        },
+        "6": {
+            "bytes": 2,
+            "writable": false,
+            "label": "电芯温度：第2组温度探头",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "℃",
+                    "codec": "signed_integer"
+                }
+            ]
+        },
+        "7": {
+            "bytes": 2,
+            "writable": false,
+            "label": "电芯温度：第1组温度探头",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "℃",
+                    "codec": "signed_integer"
+                }
+            ]
+        },
+        "8": {
+            "bytes": 2,
+            "writable": false,
+            "label": "充放电MOS的温度",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "℃",
+                    "codec": "signed_integer"
+                }
+            ]
+        },
+        "9": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 1 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "10": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 2 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "11": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 3 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "12": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 4 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "13": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 5 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "14": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 6 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "15": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 7 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "16": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 8 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "17": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 9 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "18": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 10 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "19": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 11 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "20": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 12 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "21": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 13 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "22": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 14 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "23": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 15 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "24": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 16 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "25": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 17 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "26": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 18 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "27": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 19 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "28": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 20 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "29": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 21 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "30": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 22 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "31": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 23 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "32": {
+            "bytes": 2,
+            "writable": false,
+            "label": "第 24 串电芯电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "100": {
+            "bytes": 2,
+            "writable": false,
+            "label": "充电MOS状态",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "select",
+                    "options": [
+                        {
+                            "value": 1,
+                            "label": "开启"
+                        },
+                        {
+                            "value": 0,
+                            "label": "关闭"
+                        }
+                    ],
+                    "value": null
+                }
+            ]
+        },
+        "101": {
+            "bytes": 2,
+            "writable": false,
+            "label": "放电MOS状态",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "select",
+                    "options": [
+                        {
+                            "value": 1,
+                            "label": "开启"
+                        },
+                        {
+                            "value": 0,
+                            "label": "关闭"
+                        }
+                    ],
+                    "value": null
+                }
+            ]
+        },
+        "102": {
+            "bytes": 2,
+            "writable": false,
+            "label": "标称电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.01,
+                    "precision": 2
+                }
+            ]
+        },
+        "103": {
+            "bytes": 2,
+            "writable": false,
+            "label": "电池类型",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "select",
+                    "options": [
+                        {
+                            "value": 0,
+                            "label": "三元"
+                        },
+                        {
+                            "value": 1,
+                            "label": "铁锂"
+                        }
+                    ],
+                    "value": null
+                }
+            ]
+        },
+        "104": {
+            "bytes": 2,
+            "writable": false,
+            "label": "循环次数",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "次"
+                }
+            ]
+        },
+        "105": {
+            "bytes": 2,
+            "writable": false,
+            "label": "电池健康度（简称SOH）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "%",
+                    "min": 0,
+                    "max": 100
+                }
+            ]
+        },
+        "108": {
+            "bytes": 2,
+            "writable": false,
+            "label": "扩展温度1",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "℃"
+                }
+            ]
+        },
+        "109": {
+            "bytes": 2,
+            "writable": false,
+            "label": "扩展温度2",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "℃"
+                }
+            ]
+        },
+        "110": {
+            "bytes": 2,
+            "writable": false,
+            "label": "均衡状态",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "select",
+                    "options": [
+                        {
+                            "value": 1,
+                            "label": "正在均衡"
+                        },
+                        {
+                            "value": 0,
+                            "label": "无均衡"
+                        }
+                    ],
+                    "value": null
+                }
+            ]
+        },
+        "111": {
+            "bytes": 2,
+            "writable": false,
+            "label": "单体最大压差",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "112": {
+            "bytes": 2,
+            "writable": false,
+            "label": "低温加热开关状态",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "select",
+                    "options": [
+                        {
+                            "value": 1,
+                            "label": "开"
+                        },
+                        {
+                            "value": 0,
+                            "label": "关"
+                        }
+                    ],
+                    "value": null
+                }
+            ]
+        },
+        "113": {
+            "bytes": 2,
+            "writable": false,
+            "label": "电池标称容量",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "Ah"
+                }
+            ]
+        },
+        "114": {
+            "bytes": 2,
+            "writable": false,
+            "label": "充电MOS电流",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "A"
+                }
+            ]
+        },
+        "115": {
+            "bytes": 2,
+            "writable": false,
+            "label": "放电MOS电流",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "A"
+                }
+            ]
+        },
+        "1000": {
+            "bytes": 16,
+            "writable": true,
+            "label": "设备PN",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "text",
+                    "value": null
+                }
+            ]
+        },
+        "1008": {
+            "bytes": 16,
+            "writable": false,
+            "label": "设备密钥",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "text",
+                    "value": null
+                }
+            ]
+        },
+        "1016": {
+            "bytes": 2,
+            "writable": false,
+            "label": "软件版本号",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1017": {
+            "bytes": 2,
+            "writable": false,
+            "label": "硬件版本号",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1018": {
+            "bytes": 2,
+            "writable": false,
+            "label": "电流校准倍数（专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "个",
+                    "scale": 0.0001,
+                    "precision": 4
+                }
+            ]
+        },
+        "1019": {
+            "bytes": 2,
+            "writable": false,
+            "label": "SOC保存，和SOC保存标志位（专用）",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "个"
+                }
+            ]
+        },
+        "1020": {
+            "bytes": 16,
+            "writable": false,
+            "label": "蚂蚁扩展固件版本号",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1028": {
+            "bytes": 16,
+            "writable": false,
+            "label": "蚂蚁扩展硬件版本号",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1053": {
+            "bytes": 2,
+            "writable": true,
+            "label": "过充保护电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "1054": {
+            "bytes": 2,
+            "writable": true,
+            "label": "负载释放延时设置",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1055": {
+            "bytes": 2,
+            "writable": true,
+            "label": "过充保护延时设置",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1056": {
+            "bytes": 2,
+            "writable": true,
+            "label": "过充恢复电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "1057": {
+            "bytes": 2,
+            "writable": true,
+            "label": "过放电保护延时设置",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1058": {
+            "bytes": 2,
+            "writable": true,
+            "label": "过放电保护电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "1059": {
+            "bytes": 2,
+            "writable": true,
+            "label": "过放电恢复电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "1060": {
+            "bytes": 2,
+            "writable": true,
+            "label": "平衡开启电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "1061": {
+            "bytes": 2,
+            "writable": true,
+            "label": "预充电电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "1062": {
+            "bytes": 2,
+            "writable": true,
+            "label": "低电压禁止充电电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "1063": {
+            "bytes": 2,
+            "writable": true,
+            "label": "二次过充保护电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.001,
+                    "precision": 3
+                }
+            ]
+        },
+        "1064": {
+            "bytes": 2,
+            "writable": true,
+            "label": "过放电流",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1065": {
+            "bytes": 2,
+            "writable": true,
+            "label": "过放电流延时",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1066": {
+            "bytes": 2,
+            "writable": true,
+            "label": "过放电流2",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1067": {
+            "bytes": 2,
+            "writable": true,
+            "label": "过放电流2延时",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1068": {
+            "bytes": 2,
+            "writable": true,
+            "label": "短路保护延时",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1069": {
+            "bytes": 2,
+            "writable": true,
+            "label": "短路保护电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1070": {
+            "bytes": 2,
+            "writable": true,
+            "label": "充电过流延时",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1071": {
+            "bytes": 2,
+            "writable": true,
+            "label": "充电过流电压",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1072": {
+            "bytes": 2,
+            "writable": true,
+            "label": "充放电检测电压设置",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1073": {
+            "bytes": 2,
+            "writable": true,
+            "label": "充放电开启MOS延时",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1074": {
+            "bytes": 2,
+            "writable": true,
+            "label": "充放电过流自恢复时间",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1075": {
+            "bytes": 2,
+            "writable": true,
+            "label": "二次过充保护延时",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "hex",
+                    "value": null
+                }
+            ]
+        },
+        "1076": {
+            "bytes": 2,
+            "writable": true,
+            "label": "充电高温保护阈值",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "℃",
+                    "codec": "signed_integer"
+                }
+            ]
+        },
+        "1077": {
+            "bytes": 2,
+            "writable": true,
+            "label": "充电高温恢复阈值",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "℃",
+                    "codec": "signed_integer"
+                }
+            ]
+        },
+        "1078": {
+            "bytes": 2,
+            "writable": true,
+            "label": "充电低温保护阈值",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "℃",
+                    "codec": "signed_integer"
+                }
+            ]
+        },
+        "1079": {
+            "bytes": 2,
+            "writable": true,
+            "label": "充电低温恢复阈值",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "℃",
+                    "codec": "signed_integer"
+                }
+            ]
+        },
+        "1080": {
+            "bytes": 2,
+            "writable": true,
+            "label": "放电高温保护阈值",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "℃",
+                    "codec": "signed_integer"
+                }
+            ]
+        },
+        "1081": {
+            "bytes": 2,
+            "writable": true,
+            "label": "放电高温恢复阈值",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "℃",
+                    "codec": "signed_integer"
+                }
+            ]
+        },
+        "1082": {
+            "bytes": 2,
+            "writable": true,
+            "label": "放电低温保护阈值",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "℃",
+                    "codec": "signed_integer"
+                }
+            ]
+        },
+        "1083": {
+            "bytes": 2,
+            "writable": true,
+            "label": "放电低温恢复阈值",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "℃",
+                    "codec": "signed_integer"
+                }
+            ]
+        },
+        "1084": {
+            "bytes": 2,
+            "writable": true,
+            "label": "总体过压保护阈值",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.01,
+                    "precision": 2
+                }
+            ]
+        },
+        "1085": {
+            "bytes": 2,
+            "writable": true,
+            "label": "总体过压恢复阈值",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.01,
+                    "precision": 2
+                }
+            ]
+        },
+        "1086": {
+            "bytes": 2,
+            "writable": true,
+            "label": "总体欠压保护阈值",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.01,
+                    "precision": 2
+                }
+            ]
+        },
+        "1087": {
+            "bytes": 2,
+            "writable": true,
+            "label": "总体欠压恢复阈值",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "V",
+                    "scale": 0.01,
+                    "precision": 2
+                }
+            ]
+        },
+        "1088": {
+            "bytes": 2,
+            "writable": true,
+            "label": "放电截止SOC阈值",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "%"
+                }
+            ]
+        },
+        "1089": {
+            "bytes": 2,
+            "writable": true,
+            "label": "充电时长控制",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "分钟"
+                }
+            ]
+        },
+        "1090": {
+            "bytes": 2,
+            "writable": true,
+            "label": "充电截止SOC",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "%"
+                }
+            ]
+        },
+        "1091": {
+            "bytes": 2,
+            "writable": true,
+            "label": "校准电流",
+            "rawHex": null,
+            "content": [
+                {
+                    "kind": "value",
+                    "value": null,
+                    "unit": "mA"
+                }
+            ]
+        }
+    }
+}
