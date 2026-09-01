@@ -15,4 +15,4 @@ npm run tauri dev    # 启动完整桌面应用
 
 ```bash
 cargo check --manifest-path src-tauri/Cargo.toml
-``
+```

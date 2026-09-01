@@ -167,7 +167,9 @@ textarea {
   background: var(--surface);
   color: var(--text-primary);
   outline: none;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
   font-family: inherit;
 }
 
@@ -177,7 +179,7 @@ textarea {
 }
 
 .input-mono {
-  font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+  font-family: "SF Mono", "Cascadia Code", "Consolas", monospace;
   letter-spacing: 0.03em;
 }
 
@@ -367,7 +369,6 @@ select.input {
 }
 
 @keyframes pulse {
-
   0%,
   100% {
     opacity: 1;

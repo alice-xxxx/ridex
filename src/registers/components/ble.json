@@ -133,7 +133,6 @@
             "coils": []
         }
     },
-    "name": "蓝牙报警器",
     "deviceAddress": 4,
     "readBlocks": [
         {
@@ -565,7 +564,6 @@
             ]
         }
     },
-    "id": "ble",
     "registers": {
         "1": {
             "bytes": 16,

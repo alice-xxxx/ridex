@@ -1,0 +1,207 @@
+{
+  "deviceAddress": 9,
+  "readBlocks": [
+    { "start": 0, "count": 29 },
+    { "start": 1000, "count": 60 },
+    { "start": 9999, "count": 1 }
+  ],
+  "coilReadBlocks": [],
+  "categories": {
+    "device_info": {
+      "name": "设备信息",
+      "registers": [0, 1, 3, 11]
+    },
+    "display": {
+      "name": "显示设置",
+      "registers": [19, 20, 21, 22, 23, 24]
+    },
+    "vehicle": {
+      "name": "车型设置",
+      "registers": [26, 27, 28]
+    },
+    "maintenance": {
+      "name": "维护与调试",
+      "registers": [25, 9999]
+    },
+    "wifi": {
+      "name": "网络信息",
+      "registers": [1000]
+    }
+  },
+  "registers": {
+    "0": {
+      "bytes": 2,
+      "label": "厂商代码",
+      "content": [{ "kind": "hex" }]
+    },
+    "1": {
+      "bytes": 4,
+      "label": "固件版本",
+      "content": [{ "kind": "value", "codec": "version_4byte" }]
+    },
+    "3": {
+      "bytes": 16,
+      "label": "PN",
+      "content": [{ "kind": "text" }]
+    },
+    "11": {
+      "bytes": 16,
+      "label": "SN",
+      "content": [{ "kind": "text" }]
+    },
+    "19": {
+      "bytes": 2,
+      "writable": true,
+      "label": "屏幕亮度",
+      "content": [
+        {
+          "kind": "select",
+          "options": [
+            { "value": 0, "label": "自动亮度（默认）" },
+            { "value": 1, "label": "亮度 1" },
+            { "value": 2, "label": "亮度 2" },
+            { "value": 3, "label": "亮度 3" },
+            { "value": 4, "label": "亮度 4" },
+            { "value": 5, "label": "亮度 5" },
+            { "value": 6, "label": "亮度 6" },
+            { "value": 7, "label": "亮度 7" },
+            { "value": 8, "label": "亮度 8" },
+            { "value": 9, "label": "亮度 9" },
+            { "value": 10, "label": "亮度 10" }
+          ]
+        }
+      ]
+    },
+    "20": {
+      "bytes": 2,
+      "writable": true,
+      "label": "多媒体音量",
+      "content": [
+        {
+          "kind": "select",
+          "options": [
+            { "value": 0, "label": "关闭" },
+            { "value": 1, "label": "开启（默认）" }
+          ]
+        }
+      ]
+    },
+    "21": {
+      "bytes": 2,
+      "writable": true,
+      "label": "皮肤",
+      "content": [
+        {
+          "kind": "select",
+          "options": [
+            { "value": 0, "label": "皮肤 1（默认）" },
+            { "value": 1, "label": "皮肤 2" },
+            { "value": 2, "label": "皮肤 3" },
+            { "value": 3, "label": "皮肤 4" }
+          ]
+        }
+      ]
+    },
+    "22": {
+      "bytes": 2,
+      "writable": true,
+      "label": "配色",
+      "content": [
+        {
+          "kind": "select",
+          "options": [
+            { "value": 0, "label": "配色 1（默认）" },
+            { "value": 1, "label": "配色 2" },
+            { "value": 2, "label": "配色 3" },
+            { "value": 3, "label": "配色 4" }
+          ]
+        }
+      ]
+    },
+    "23": {
+      "bytes": 2,
+      "writable": true,
+      "label": "小屏",
+      "content": [
+        {
+          "kind": "select",
+          "options": [
+            { "value": 0, "label": "小屏 1（默认）" },
+            { "value": 1, "label": "小屏 2" },
+            { "value": 2, "label": "小屏 3" }
+          ]
+        }
+      ]
+    },
+    "24": {
+      "bytes": 2,
+      "writable": true,
+      "label": "按键提示音",
+      "content": [
+        {
+          "kind": "select",
+          "options": [
+            { "value": 0, "label": "关闭（默认）" },
+            { "value": 1, "label": "开启" }
+          ]
+        }
+      ]
+    },
+    "25": {
+      "bytes": 2,
+      "writable": true,
+      "label": "删除所有蓝牙配对信息",
+      "content": [
+        {
+          "kind": "select",
+          "verifyValue": 0,
+          "options": [
+            { "value": 0, "label": "无操作" },
+            { "value": 1, "label": "删除全部配对信息" }
+          ]
+        }
+      ]
+    },
+    "26": {
+      "bytes": 2,
+      "writable": true,
+      "label": "能量条最大输出功率",
+      "content": [{ "kind": "value", "min": 0, "max": 65535, "unit": "W" }]
+    },
+    "27": {
+      "bytes": 2,
+      "writable": true,
+      "label": "能量条最大回收功率",
+      "content": [{ "kind": "value", "codec": "signed_integer", "min": -32768, "max": 0, "unit": "W" }]
+    },
+    "28": {
+      "bytes": 2,
+      "writable": true,
+      "label": "机型",
+      "content": [
+        {
+          "kind": "select",
+          "options": [
+            { "value": 0, "label": "安卓机型（默认）" },
+            { "value": 1, "label": "苹果机型" },
+            { "value": 2, "label": "鸿蒙机型" }
+          ]
+        }
+      ]
+    },
+    "1000": {
+      "bytes": 120,
+      "label": "WIFI 鉴权信息",
+      "content": [{ "kind": "text" }]
+    },
+    "9999": {
+      "bytes": 2,
+      "writable": true,
+      "label": "调试寄存器",
+      "content": [
+        { "kind": "value", "min": 0, "max": 65535, "note": "0 关闭功能测试；其他值进入厂商定义的对应测试" }
+      ]
+    }
+  },
+  "coils": {}
+}

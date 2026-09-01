@@ -5,26 +5,13 @@
 
 use crate::{ble, modbus, network, serial};
 
-use std::{
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
-    time::Duration,
-};
+use std::sync::{atomic::AtomicBool, Arc};
 
-use crc::{Crc, CRC_32_ISO_HDLC};
 use serde::{Deserialize, Serialize};
-use tokio::time::sleep;
 
-use tauri::{AppHandle, Emitter};
+use tauri::AppHandle;
+
 use tauri_plugin_fs::FsExt;
-
-const OTA_PACKET_SIZE: usize = 128;
-const OTA_MAX_PACKETS: usize = u16::MAX as usize + 1;
-const OTA_TIMEOUT_RETRIES: usize = 3;
-const OTA_CRC32: Crc<u32> = Crc::<u32>::new(&CRC_32_ISO_HDLC);
-
 /// 创建通道时所需的参数。
 #[derive(Debug, Deserialize)]
 #[serde(
@@ -224,160 +211,15 @@ impl AnyChannel {
             .read(url)
             .map_err(|error| format!("读取固件失败: {error}"))
     }
-    /// 使用当前通道发送 OTA 握手、数据分包和结果确认。
-    ///
-    /// 固件内容由调用方提供；数据不足 128 字节的最后一包由协议组帧时补 0xFF。
-    pub async fn ota_start(
-        &self,
-        app: &AppHandle,
-        device: u8,
-        firmware: &[u8],
-        manufacturer: [u8; 4],
-        hardware_version: [u8; 2],
-        software_version: [u8; 2],
-        cycles: u16,
-    ) -> Result<(), String> {
-        if firmware.is_empty() {
-            return Err("OTA 固件内容为空".to_string());
+
+    pub fn file_url(path: &str) -> Result<tauri::Url, String> {
+        if path.trim().is_empty() {
+            return Err(format!("输出路径不能为空"));
         }
-        if !(1..=100).contains(&cycles) {
-            return Err("OTA 循环次数必须在 1..=100 之间".to_string());
-        }
-        if firmware.len().div_ceil(OTA_PACKET_SIZE) > OTA_MAX_PACKETS {
-            return Err("OTA 固件超过 8 MiB".to_string());
-        }
-
-        self.ota_stop_flag().store(false, Ordering::Release);
-        let firmware_crc = OTA_CRC32.checksum(firmware);
-        let packets = firmware.len().div_ceil(OTA_PACKET_SIZE);
-        let total_packets = packets * usize::from(cycles);
-
-        for cycle in 0..cycles {
-            self.ensure_ota_running()?;
-            self.ota_modbus_tx(
-                &modbus::Protocol::OtaHandshake {
-                    device,
-                    firmware_size: firmware.len() as u32,
-                    manufacturer,
-                    hardware_version,
-                    software_version,
-                    firmware_crc,
-                },
-                5_000,
-                &format!("OTA 握手（第 {}/{} 次）", cycle + 1, cycles),
-            )
-            .await?;
-
-            for (index, packet) in firmware.chunks(OTA_PACKET_SIZE).enumerate() {
-                self.ensure_ota_running()?;
-                self.ota_modbus_tx(
-                    &modbus::Protocol::OtaData {
-                        device,
-                        sequence: index as u16,
-                        data: packet.to_vec(),
-                    },
-                    5_000,
-                    &format!(
-                        "OTA 数据包（第 {}/{} 次，第 {}/{} 包）",
-                        cycle + 1,
-                        cycles,
-                        index + 1,
-                        packets,
-                    ),
-                )
-                .await?;
-                let completed_packets = usize::from(cycle) * packets + index + 1;
-                emit_ota_progress(app, (completed_packets * 100 / total_packets) as u8);
-            }
-
-            self.ensure_ota_running()?;
-            self.ota_modbus_tx(
-                &modbus::Protocol::OtaResult { device },
-                5_000,
-                &format!("OTA 结果确认（第 {}/{} 次）", cycle + 1, cycles),
-            )
-            .await?;
-
-            if cycle + 1 < cycles {
-                sleep(Duration::from_secs(2)).await;
-            } else {
-                emit_ota_progress(app, 100);
-            }
-        }
-
-        Ok(())
-    }
-
-    /// 返回 OTA 停止标志的共享句柄。命令层在 OTA 持有通道锁时也需要能够取消。
-    pub fn ota_stop_handle(&self) -> Arc<AtomicBool> {
-        match self {
-            Self::Ble { ota_stop, .. } => Arc::clone(ota_stop),
-            Self::Serial { ota_stop, .. } => Arc::clone(ota_stop),
-            Self::Network { ota_stop, .. } => Arc::clone(ota_stop),
-        }
-    }
-
-    fn ota_stop_flag(&self) -> &AtomicBool {
-        match self {
-            Self::Ble { ota_stop, .. } => ota_stop,
-            Self::Serial { ota_stop, .. } => ota_stop,
-            Self::Network { ota_stop, .. } => ota_stop,
-        }
-    }
-
-    fn ensure_ota_running(&self) -> Result<(), String> {
-        if self.ota_stop_flag().load(Ordering::Acquire) {
-            Err("OTA 已停止".to_string())
+        if path.starts_with("content://") || path.starts_with("file://") {
+            tauri::Url::parse(path).map_err(|error| format!("输出路径无效: {error}"))
         } else {
-            Ok(())
+            tauri::Url::from_file_path(path).map_err(|_| format!("输出路径无效"))
         }
     }
-
-    /// OTA 失败时保留本次实际组装的完整请求帧，便于前端定位失败阶段和协议内容。
-    async fn ota_modbus_tx(
-        &self,
-        request: &modbus::Protocol,
-        timeout_ms: u64,
-        stage: &str,
-    ) -> Result<modbus::TransactionResult, String> {
-        let request_frame = modbus::assembly_frame(request.clone())
-            .map_err(|error| format!("{stage}组帧失败：{error}"))?;
-        let mut attempts = 0;
-        loop {
-            attempts += 1;
-            match self.modbus_tx(request, timeout_ms).await {
-                Ok(result) => return Ok(result),
-                Err(error) if is_timeout_error(&error) && attempts < OTA_TIMEOUT_RETRIES => {
-                    continue;
-                }
-                Err(error) => {
-                    let retries = attempts.saturating_sub(1);
-                    return Err(format!(
-                        "{stage}失败（已尝试 {attempts} 次，超时重试 {retries} 次）：{error}；发送帧：{}",
-                        format_frame_bytes(&request_frame),
-                    ));
-                }
-            }
-        }
-    }
-}
-
-fn is_timeout_error(error: &str) -> bool {
-    let normalized = error.to_ascii_lowercase();
-    error.contains("超时")
-        || normalized.contains("timeout")
-        || normalized.contains("timed out")
-        || normalized.contains("no data received within")
-}
-
-fn format_frame_bytes(bytes: &[u8]) -> String {
-    bytes
-        .iter()
-        .map(|byte| format!("{byte:02X}"))
-        .collect::<Vec<_>>()
-        .join(" ")
-}
-
-fn emit_ota_progress(app: &AppHandle, percent: u8) {
-    let _ = app.emit("ota-progress", percent);
 }

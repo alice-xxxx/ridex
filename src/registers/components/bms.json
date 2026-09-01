@@ -190,7 +190,6 @@
             "coils": []
         }
     },
-    "name": "BMS",
     "deviceAddress": 1,
     "readBlocks": [
         {
@@ -1126,7 +1125,6 @@
             ]
         }
     },
-    "id": "bms",
     "registers": {
         "0": {
             "bytes": 2,

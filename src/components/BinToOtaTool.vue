@@ -1,82 +1,82 @@
-<script setup>
-import { computed, ref } from "vue"
-import { errorMessage, fixedHexBytes } from "../services/protocol.js"
-import { tauriApi } from "../services/tauri.js"
+<script setup lang="ts">
+import { computed, reactive } from "vue"
+import { errorMessage, parseHexBytes } from "../services/protocol"
+import { tauriApi } from "../services/tauri"
+import { useSessionStore } from "../stores/session"
 
-const inputPath = ref("")
-const inputName = ref("")
-const manufacturer = ref("00003132")
-const deviceType = ref("0000")
-const hardwareVersion = ref("0000")
-const softwareVersion = ref("0000")
-const deviceAddress = ref("FF")
-const description = ref("")
-const busy = ref(false)
-const error = ref("")
-const result = ref("")
+const session = useSessionStore()
 
-const outputName = computed(() => {
-    const base = inputName.value.replace(/\.bin$/i, "")
-    return (base || "firmware") + ".ota"
+const tool = reactive({
+  inputPath: "",
+  manufacturer: "00003132",
+  deviceType: "0000",
+  hardwareVersion: "0000",
+  softwareVersion: "0000",
+  deviceAddress: "02",
+  description: "",
+  busy: false,
+  error: "",
+  result: "",
 })
 
-const fileName = (value) => {
-    if (!value) return ""
-    try {
-        value = decodeURIComponent(value)
-    } catch {
-        // 保留原始路径，文件名仍可正常显示。
-    }
-    return value.split(/[\\/]/).pop() || value
+const fileName = (value: string) => {
+  if (!value) return ""
+  try {
+    value = decodeURIComponent(value)
+  } catch {
+    // 保留原始路径，文件名仍可正常显示。
+  }
+  return value.split(/[\\/]/).pop() || value
 }
 
-const parseByte = (value, label) => {
-    const normalized = value.trim().replace(/^0x/i, "")
-    if (!/^[0-9a-f]{1,2}$/i.test(normalized)) {
-        throw new Error(label + "必须是 1~2 位 HEX")
-    }
-    return Number.parseInt(normalized, 16)
+const displayVersion = (value: string) => {
+  const hex = value.trim()
+  if (!/^[\dA-Fa-f]{4}$/.test(hex)) return hex
+  return `${Number.parseInt(hex.slice(2, 4), 16)}.${Number.parseInt(hex.slice(0, 2), 16)}`
 }
 
-const chooseBin = async () => {
-    error.value = ""
-    result.value = ""
-    const selected = await tauriApi.pickBin()
-    const path = Array.isArray(selected) ? selected[0] : selected
-    if (!path) return
-    inputPath.value = path
-    inputName.value = fileName(path)
+const outputName = computed(() => {
+  return `${displayVersion(tool.hardwareVersion)}.${displayVersion(tool.softwareVersion)}.ota`
+})
+
+const chooseFirmware = async () => {
+  tool.error = ""
+  tool.result = ""
+  const path = await tauriApi.pickFirmwareSource()
+  if (!path) return
+  tool.inputPath = path
+}
+
+const leaveTool = () => {
+  session.goTo(session.authenticated ? "status" : "search")
 }
 
 const convert = async () => {
-    error.value = ""
-    result.value = ""
-    busy.value = true
-    try {
-        if (!inputPath.value) throw new Error("请先选择 BIN 固件")
-        const text = description.value.trim()
-        if (!/^[\x00-\x7F]*$/.test(text)) throw new Error("文件描述只能使用 ASCII 字符")
-        if (new TextEncoder().encode(text).length > 20) {
-            throw new Error("文件描述最多 20 个字节")
-        }
-        const outputPath = await tauriApi.saveOta(outputName.value)
-        if (!outputPath) return
-        const info = await tauriApi.otaPack({
-            inputPath: inputPath.value,
-            outputPath,
-            manufacturer: fixedHexBytes(4, "厂家编码").parse(manufacturer.value),
-            deviceType: fixedHexBytes(2, "产品类型").parse(deviceType.value),
-            hardwareVersion: fixedHexBytes(2, "硬件版本").parse(hardwareVersion.value),
-            softwareVersion: fixedHexBytes(2, "软件版本").parse(softwareVersion.value),
-            deviceAddress: parseByte(deviceAddress.value, "设备地址"),
-            description: text,
-        })
-        result.value = "已生成 " + fileName(outputPath) + "（" + info.upgradeSize + " 字节）"
-    } catch (cause) {
-        error.value = errorMessage(cause, "BIN 转 OTA 失败")
-    } finally {
-        busy.value = false
-    }
+  tool.error = ""
+  tool.result = ""
+  tool.busy = true
+  try {
+    if (!tool.inputPath) throw new Error("请先选择固件文件")
+    const outputPath = await tauriApi.saveOta(outputName.value)
+    if (!outputPath) return
+    await tauriApi.otaPack({
+      inputPath: tool.inputPath,
+      outputPath,
+      request: {
+        manufacturer: parseHexBytes(tool.manufacturer, 4, "厂家编码"),
+        deviceType: parseHexBytes(tool.deviceType, 2, "产品类型"),
+        hardwareVersion: parseHexBytes(tool.hardwareVersion, 2, "硬件版本"),
+        softwareVersion: parseHexBytes(tool.softwareVersion, 2, "软件版本"),
+        deviceAddress: parseHexBytes(tool.deviceAddress, 1, "设备地址")[0],
+        description: tool.description.trim(),
+      },
+    })
+    tool.result = "已生成 " + fileName(outputPath)
+  } catch (cause) {
+    tool.error = errorMessage(cause, "转 OTA 失败")
+  } finally {
+    tool.busy = false
+  }
 }
 </script>
 
@@ -85,64 +85,105 @@ const convert = async () => {
     <header class="page-head">
       <div>
         <span class="tool-kicker">FIRMWARE TOOL</span>
-        <h1>BIN 转 OTA</h1>
+        <h1>固件转 OTA</h1>
         <p>填写文件头信息，生成可直接用于升级的 OTA 固件</p>
       </div>
+      <button type="button" class="btn btn-outline btn-sm page-back" @click="leaveTool">返回</button>
     </header>
 
     <div class="bin-ota-tool">
       <div class="tool-head">
         <span class="tool-kicker">FIRMWARE TOOL</span>
-        <strong>BIN 转 OTA</strong>
+        <strong>固件转 OTA</strong>
         <small>填写信息后生成 OTA 固件</small>
       </div>
 
       <div class="bin-ota-body">
-      <div class="bin-file-row">
-        <div class="bin-file-copy">
-          <span>输入 BIN 固件</span>
-          <strong>{{ inputName || '尚未选择文件' }}</strong>
+        <div class="bin-file-row">
+          <div class="bin-file-copy">
+            <span>输入固件（BIN / HEX / SREC / TI-TXT / VMEM / ELF / AXF）</span>
+            <strong>{{ fileName(tool.inputPath) || "尚未选择文件" }}</strong>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" :disabled="tool.busy" @click="chooseFirmware">
+            {{ tool.inputPath ? "更换固件" : "选择固件" }}
+          </button>
         </div>
-        <button type="button" class="btn btn-outline btn-sm" :disabled="busy" @click="chooseBin">
-          {{ inputPath ? '更换 BIN' : '选择 BIN' }}
-        </button>
-      </div>
 
-      <div class="bin-ota-fields">
-        <label>
-          <span>厂家编码 <small>4 字节 HEX</small></span>
-          <input v-model.trim="manufacturer" class="input input-sm input-mono" maxlength="8" placeholder="00003132" spellcheck="false" />
-        </label>
-        <label>
-          <span>产品类型 <small>2 字节 HEX</small></span>
-          <input v-model.trim="deviceType" class="input input-sm input-mono" maxlength="4" placeholder="0000" spellcheck="false" />
-        </label>
-        <label>
-          <span>硬件版本 <small>2 字节 HEX</small></span>
-          <input v-model.trim="hardwareVersion" class="input input-sm input-mono" maxlength="4" placeholder="0000" spellcheck="false" />
-        </label>
-        <label>
-          <span>软件版本 <small>2 字节 HEX</small></span>
-          <input v-model.trim="softwareVersion" class="input input-sm input-mono" maxlength="4" placeholder="0000" spellcheck="false" />
-        </label>
-        <label>
-          <span>设备地址 <small>1 字节 HEX，FF 为不限制</small></span>
-          <input v-model.trim="deviceAddress" class="input input-sm input-mono" maxlength="4" placeholder="FF" spellcheck="false" />
-        </label>
-        <label class="description-field">
-          <span>文件描述 <small>ASCII，最多 20 字节</small></span>
-          <input v-model="description" class="input input-sm" maxlength="20" placeholder="可选" />
-        </label>
-      </div>
+        <div class="bin-ota-fields">
+          <label>
+            <span>厂家编码 <small>4 字节 HEX</small></span>
+            <input
+              v-model.trim="tool.manufacturer"
+              class="input input-sm input-mono"
+              maxlength="8"
+              placeholder="00003132"
+              spellcheck="false"
+            />
+          </label>
+          <label>
+            <span>产品类型 <small>2 字节 HEX</small></span>
+            <input
+              v-model.trim="tool.deviceType"
+              class="input input-sm input-mono"
+              maxlength="4"
+              placeholder="0000"
+              spellcheck="false"
+            />
+          </label>
+          <label>
+            <span>硬件版本 <small>2 字节 HEX</small></span>
+            <input
+              v-model.trim="tool.hardwareVersion"
+              class="input input-sm input-mono"
+              maxlength="4"
+              placeholder="0000"
+              spellcheck="false"
+            />
+          </label>
+          <label>
+            <span>软件版本 <small>2 字节 HEX</small></span>
+            <input
+              v-model.trim="tool.softwareVersion"
+              class="input input-sm input-mono"
+              maxlength="4"
+              placeholder="0000"
+              spellcheck="false"
+            />
+          </label>
+          <label>
+            <span>设备地址 <small>1 字节 HEX，FF 为不限制</small></span>
+            <input
+              v-model.trim="tool.deviceAddress"
+              class="input input-sm input-mono"
+              maxlength="4"
+              placeholder="FF"
+              spellcheck="false"
+            />
+          </label>
+          <label class="description-field">
+            <span>文件描述 <small>ASCII，最多 20 字节</small></span>
+            <input
+              v-model="tool.description"
+              class="input input-sm"
+              maxlength="20"
+              placeholder="可选"
+            />
+          </label>
+        </div>
 
-      <div class="bin-ota-footer">
-        <span>输出文件：{{ outputName }} · 自动计算文件 CRC 与升级 CRC</span>
-        <button type="button" class="btn btn-primary" :disabled="busy || !inputPath" @click="convert">
-          {{ busy ? '正在生成…' : '转换并保存 OTA' }}
-        </button>
-      </div>
-      <div v-if="error" class="msg msg-error">{{ error }}</div>
-      <div v-if="result" class="msg msg-success">{{ result }}</div>
+        <div class="bin-ota-footer">
+          <span>输出文件：{{ outputName }} · 自动计算文件 CRC 与升级 CRC</span>
+          <button
+            type="button"
+            class="btn btn-primary"
+            :disabled="tool.busy || !tool.inputPath"
+            @click="convert"
+          >
+            {{ tool.busy ? "正在生成…" : "转换并保存 OTA" }}
+          </button>
+        </div>
+        <div v-if="tool.error" class="msg msg-error">{{ tool.error }}</div>
+        <div v-if="tool.result" class="msg msg-success">{{ tool.result }}</div>
       </div>
     </div>
   </section>
@@ -154,19 +195,27 @@ const convert = async () => {
 }
 
 .page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 18px;
+}
+
+.page-back {
+  flex: 0 0 auto;
 }
 
 .page-head h1 {
   margin: 6px 0 3px;
   font-size: clamp(1.8rem, 4vw, 2.6rem);
-  letter-spacing: -.05em;
+  letter-spacing: -0.05em;
 }
 
 .page-head p {
   margin: 0;
   color: var(--text-muted);
-  font-size: .72rem;
+  font-size: 0.72rem;
 }
 
 .bin-ota-tool {
@@ -187,19 +236,21 @@ const convert = async () => {
 
 .tool-kicker {
   color: var(--primary);
-  font: 700 .58rem/1 'Cascadia Code', monospace;
-  letter-spacing: .12em;
+  font:
+    700 0.58rem/1 "Cascadia Code",
+    monospace;
+  letter-spacing: 0.12em;
 }
 
 .tool-head strong {
-  font-size: .9rem;
+  font-size: 0.9rem;
 }
 
 .tool-head small {
   min-width: 0;
   overflow: hidden;
   color: var(--text-muted);
-  font-size: .65rem;
+  font-size: 0.65rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -231,14 +282,16 @@ const convert = async () => {
 .bin-file-copy > span,
 .bin-ota-fields label > span {
   color: var(--text-secondary);
-  font-size: .68rem;
+  font-size: 0.68rem;
   font-weight: 700;
 }
 
 .bin-file-copy strong {
   overflow: hidden;
   color: var(--text-primary);
-  font: 700 .75rem/1.2 'Cascadia Code', monospace;
+  font:
+    700 0.75rem/1.2 "Cascadia Code",
+    monospace;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -264,7 +317,7 @@ const convert = async () => {
 
 .bin-ota-fields label > span small {
   color: var(--text-muted);
-  font-size: .55rem;
+  font-size: 0.55rem;
   font-weight: 500;
 }
 
@@ -284,7 +337,7 @@ const convert = async () => {
   min-width: 0;
   overflow: hidden;
   color: var(--text-muted);
-  font-size: .62rem;
+  font-size: 0.62rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

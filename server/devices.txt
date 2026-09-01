@@ -1,2 +1,2 @@
-# Add one approved deviceId per line.
-2f58ee09-838b-4d85-850b-1975d6f791e1
+# Format: <deviceId> # <device owner / note>
+2f58ee09-838b-4d85-850b-1975d6f791e1 # owner: unknown

@@ -57,7 +57,6 @@
             "coils": []
         }
     },
-    "name": "ABS",
     "deviceAddress": 6,
     "readBlocks": [
         {
@@ -78,7 +77,6 @@
         }
     ],
     "coils": {},
-    "id": "abs",
     "registers": {
         "0": {
             "bytes": 4,

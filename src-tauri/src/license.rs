@@ -47,11 +47,6 @@ struct Response {
     ticket: String,
 }
 
-#[derive(Deserialize)]
-struct Rejection {
-    message: Option<String>,
-}
-
 fn verify_ticket(
     encoded: &str,
     device_id: &str,
@@ -147,15 +142,14 @@ fn is_missing_file(error: &(dyn StdError + 'static)) -> bool {
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct License {
-    pub(crate) device_id: String,
-    pub(crate) authorized: bool,
-    pub(crate) ready: bool,
-    pub(crate) message: Option<String>,
+pub struct License {
+    pub device_id: String,
+    pub authorized: bool,
+    pub message: Option<String>,
 }
 
 impl License {
-    pub(crate) fn init(app: &tauri::AppHandle) -> Result<Self, String> {
+    pub fn init(app: &tauri::AppHandle) -> Result<Self, String> {
         let device_id = app
             .machine_uid()
             .get_machine_uid()
@@ -165,38 +159,27 @@ impl License {
         Ok(Self {
             device_id,
             authorized: false,
-            ready: false,
             message: None,
         })
     }
 
-    pub(crate) fn unavailable(error: String) -> Self {
+    pub fn unavailable(error: String) -> Self {
         let message = format!("启动授权失败: {error}");
         Self {
-            device_id: format!("设备 ID 不可用: {error}"),
+            device_id: "".to_string(),
             authorized: false,
-            ready: true,
             message: Some(message),
         }
     }
 
-    pub(crate) fn ensure_authorized(&self) -> Result<(), String> {
+    pub fn ensure_authorized(&self) -> Result<(), String> {
         if self.authorized {
             return Ok(());
         }
-
-        let message = self
-            .message
-            .clone()
-            .unwrap_or_else(|| "应用尚未完成授权".to_string());
-        if message.contains("设备 ID:") {
-            Err(message)
-        } else {
-            Err(format!("{message}; 设备 ID: {}", self.device_id))
-        }
+        Err(format!("应用尚未完成授权,设备 ID: {}", self.device_id))
     }
 
-    pub(crate) async fn authorize(&mut self, app: &tauri::AppHandle) -> Result<(), String> {
+    pub async fn authorize(&mut self, app: &tauri::AppHandle) -> Result<(), String> {
         #[derive(Serialize)]
         #[serde(rename_all = "camelCase")]
         struct AuthorizationRequest {
@@ -209,19 +192,10 @@ impl License {
 
         enum OnlineFailure {
             Network,
-            Rejected {
-                message: String,
-                invalidate_cache: bool,
-            },
-            InvalidResponse(String),
+            InvalidResponse,
         }
 
         const TICKET_MAGIC: &[u8; 8] = b"RIDEXT01";
-
-        let exit_with = |message: String| -> Result<(), String> {
-            app.exit(1);
-            Err(message)
-        };
 
         let online = async {
             let mut nonce = [0u8; 32];
@@ -235,8 +209,8 @@ impl License {
             };
 
             let client = reqwest::Client::builder()
-                .connect_timeout(Duration::from_secs(3))
-                .timeout(Duration::from_secs(5))
+                .connect_timeout(Duration::from_secs(2))
+                .timeout(Duration::from_secs(3))
                 .build()
                 .map_err(|_| OnlineFailure::Network)?;
             let response = client
@@ -251,31 +225,18 @@ impl License {
 
             if !response.status().is_success() {
                 let status = response.status();
-                let message = response
-                    .json::<Rejection>()
-                    .await
-                    .ok()
-                    .and_then(|body| body.message)
-                    .unwrap_or_else(|| format!("服务器拒绝授权 ({status})"));
-                if status.is_server_error() {
-                    return Err(OnlineFailure::Network);
+                if status == reqwest::StatusCode::NOT_FOUND {
+                    return Err(OnlineFailure::InvalidResponse);
                 }
-                // Only the auth server's explicit device-denied response invalidates
-                // the cache. Transport, proxy, protocol, and rate-limit errors do not.
-                return Err(OnlineFailure::Rejected {
-                    invalidate_cache: status == reqwest::StatusCode::FORBIDDEN
-                        && message == "device denied",
-                    message,
-                });
+                return Err(OnlineFailure::Network);
             }
 
-            let response = response.json::<Response>().await.map_err(|error| {
-                OnlineFailure::InvalidResponse(format!("授权响应无效: {error}"))
-            })?;
+            let response = response
+                .json::<Response>()
+                .await
+                .map_err(|_| OnlineFailure::InvalidResponse)?;
             if response.code != "authorized" {
-                return Err(OnlineFailure::InvalidResponse(
-                    "服务器返回未授权响应".into(),
-                ));
+                return Err(OnlineFailure::InvalidResponse);
             }
 
             Ok::<(String, String), OnlineFailure>((response.ticket, request.nonce))
@@ -369,18 +330,14 @@ impl License {
                     .map(|_| ())
                     .map_err(|error| format!("本地授权校验失败: {error}"))
             })(),
-            Err(OnlineFailure::Rejected {
-                message,
-                invalidate_cache,
-            }) if invalidate_cache => {
+            Err(OnlineFailure::InvalidResponse) => {
                 let error = match clear_ticket() {
-                    Ok(()) => message,
-                    Err(clear_error) => format!("{message}; {clear_error}"),
+                    Ok(()) => "".to_string(),
+                    Err(clear_error) => format!("{clear_error}"),
                 };
-                exit_with(error)
+                app.exit(1);
+                Err(error)
             }
-            Err(OnlineFailure::Rejected { message, .. }) => Err(message),
-            Err(OnlineFailure::InvalidResponse(error)) => Err(error),
             Err(OnlineFailure::Network) => match read_ticket() {
                 Ok(ticket) => verify_ticket(&ticket, &self.device_id, None)
                     .map(|_| ())
@@ -397,14 +354,12 @@ impl License {
         match result {
             Ok(()) => {
                 self.authorized = true;
-                self.ready = true;
                 self.message = None;
                 Ok(())
             }
             Err(error) => {
-                let error = format!("{error}; 设备 ID: {}", self.device_id);
+                let error = format!("{error}");
                 self.authorized = false;
-                self.ready = true;
                 self.message = Some(error.clone());
                 Err(error)
             }

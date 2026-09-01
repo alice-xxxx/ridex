@@ -125,7 +125,6 @@
             "coils": []
         }
     },
-    "name": "MCU 控制器",
     "deviceAddress": 5,
     "readBlocks": [
         {
@@ -617,7 +616,6 @@
             ]
         }
     },
-    "id": "controller",
     "registers": {
         "0": {
             "bytes": 2,
