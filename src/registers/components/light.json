@@ -1,70 +1,205 @@
 {
   "deviceAddress": 56,
   "readBlocks": [
-    { "start": 0, "count": 23 },
-    { "start": 50, "count": 9 },
-    { "start": 90, "count": 31 },
-    { "start": 500, "count": 5 }
+    {
+      "start": 0,
+      "count": 23
+    },
+    {
+      "start": 50,
+      "count": 9
+    },
+    {
+      "start": 90,
+      "count": 31
+    },
+    {
+      "start": 500,
+      "count": 5
+    }
   ],
   "coilReadBlocks": [],
   "categories": {
     "device_info": {
       "name": "设备信息",
-      "registers": [0, 9, 17, 18, 19, 20, 21]
+      "registers": [
+        0,
+        9,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
     },
     "spotlight": {
       "name": "射灯控制",
-      "registers": [50, 55, 56, 57, 58]
+      "registers": [
+        50,
+        55,
+        56,
+        57,
+        58
+      ]
     },
     "light_effects": {
       "name": "灯效设置",
-      "registers": [90, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120]
+      "registers": [
+        90,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120
+      ]
     },
     "heated_grips": {
       "name": "加热转把",
-      "registers": [500, 501, 502, 503, 504]
+      "registers": [
+        500,
+        501,
+        502,
+        503,
+        504
+      ]
     }
   },
   "registers": {
     "0": {
       "bytes": 2,
       "label": "寄存器版本号",
-      "content": [{ "kind": "hex" }]
+      "content": [
+        {
+          "kind": "hex"
+        }
+      ]
     },
     "9": {
       "bytes": 16,
       "label": "产品编码（PN）",
-      "content": [{ "kind": "text" }]
+      "content": [
+        {
+          "kind": "text"
+        }
+      ]
     },
     "17": {
       "bytes": 2,
       "label": "厂商编码（CN）",
-      "content": [{ "kind": "hex" }]
+      "content": [
+        {
+          "kind": "hex"
+        }
+      ]
     },
     "18": {
       "bytes": 2,
       "label": "硬件版本号",
-      "content": [{ "kind": "hex" }]
+      "content": [
+        {
+          "kind": "hex"
+        }
+      ]
     },
     "19": {
       "bytes": 2,
       "label": "软件版本号",
-      "content": [{ "kind": "hex" }]
+      "content": [
+        {
+          "kind": "hex"
+        }
+      ]
     },
     "20": {
       "bytes": 2,
       "label": "RGB 灯条总数",
-      "content": [{ "kind": "value", "unit": "条" }]
+      "content": [
+        {
+          "kind": "value",
+          "unit": "条"
+        }
+      ]
     },
     "21": {
       "bytes": 4,
       "label": "灯控盒设备信息",
       "content": [
-        { "kind": "switch", "label": "射灯", "bits": [[0, 0]], "on": "已安装", "off": "未安装" },
-        { "kind": "switch", "label": "加热转把", "bits": [[1, 1]], "on": "已安装", "off": "未安装" },
-        { "kind": "switch", "label": "车前盖灯条", "bits": [[2, 2]], "on": "已安装", "off": "未安装" },
-        { "kind": "switch", "label": "车侧面灯条", "bits": [[3, 3]], "on": "已安装", "off": "未安装" },
-        { "kind": "switch", "label": "后轮轮毂灯条", "bits": [[4, 4]], "on": "已安装", "off": "未安装" }
+        {
+          "kind": "switch",
+          "label": "射灯",
+          "bits": [
+            [
+              0,
+              0
+            ]
+          ],
+          "on": "已安装",
+          "off": "未安装"
+        },
+        {
+          "kind": "switch",
+          "label": "加热转把",
+          "bits": [
+            [
+              1,
+              1
+            ]
+          ],
+          "on": "已安装",
+          "off": "未安装"
+        },
+        {
+          "kind": "switch",
+          "label": "车前盖灯条",
+          "bits": [
+            [
+              2,
+              2
+            ]
+          ],
+          "on": "已安装",
+          "off": "未安装"
+        },
+        {
+          "kind": "switch",
+          "label": "车侧面灯条",
+          "bits": [
+            [
+              3,
+              3
+            ]
+          ],
+          "on": "已安装",
+          "off": "未安装"
+        },
+        {
+          "kind": "switch",
+          "label": "后轮轮毂灯条",
+          "bits": [
+            [
+              4,
+              4
+            ]
+          ],
+          "on": "已安装",
+          "off": "未安装"
+        }
       ]
     },
     "50": {
@@ -73,10 +208,54 @@
       "writePrefixHex": "0x5A",
       "label": "射灯照明",
       "content": [
-        { "kind": "switch", "label": "右近光", "bits": [[0, 0]], "on": "开启", "off": "关闭" },
-        { "kind": "switch", "label": "右远光", "bits": [[1, 1]], "on": "开启", "off": "关闭" },
-        { "kind": "switch", "label": "左近光", "bits": [[2, 2]], "on": "开启", "off": "关闭" },
-        { "kind": "switch", "label": "左远光", "bits": [[3, 3]], "on": "开启", "off": "关闭" }
+        {
+          "kind": "switch",
+          "label": "右近光",
+          "bits": [
+            [
+              0,
+              0
+            ]
+          ],
+          "on": "开启",
+          "off": "关闭"
+        },
+        {
+          "kind": "switch",
+          "label": "右远光",
+          "bits": [
+            [
+              1,
+              1
+            ]
+          ],
+          "on": "开启",
+          "off": "关闭"
+        },
+        {
+          "kind": "switch",
+          "label": "左近光",
+          "bits": [
+            [
+              2,
+              2
+            ]
+          ],
+          "on": "开启",
+          "off": "关闭"
+        },
+        {
+          "kind": "switch",
+          "label": "左远光",
+          "bits": [
+            [
+              3,
+              3
+            ]
+          ],
+          "on": "开启",
+          "off": "关闭"
+        }
       ]
     },
     "55": {
@@ -84,7 +263,19 @@
       "writable": true,
       "writePrefixHex": "0x5A",
       "label": "射灯使能",
-      "content": [{ "kind": "switch", "bits": [[0, 0]], "on": "已使能", "off": "已禁能" }]
+      "content": [
+        {
+          "kind": "switch",
+          "bits": [
+            [
+              0,
+              0
+            ]
+          ],
+          "on": "已使能",
+          "off": "已禁能"
+        }
+      ]
     },
     "56": {
       "bytes": 2,
@@ -94,8 +285,14 @@
         {
           "kind": "select",
           "options": [
-            { "value": 0, "label": "白色" },
-            { "value": 1, "label": "非白色" }
+            {
+              "value": 0,
+              "label": "白色"
+            },
+            {
+              "value": 1,
+              "label": "非白色"
+            }
           ]
         }
       ]
@@ -104,14 +301,41 @@
       "bytes": 2,
       "writable": true,
       "label": "射灯亮度",
-      "content": [{ "kind": "value", "min": 10, "max": 100, "unit": "%" }]
+      "content": [
+        {
+          "kind": "value",
+          "min": 10,
+          "max": 100,
+          "unit": "%"
+        }
+      ]
     },
     "58": {
       "bytes": 2,
       "label": "射灯温度",
       "content": [
-        { "kind": "value", "label": "最高温度", "bits": [[8, 15]], "codec": "signed_i8", "unit": "℃" },
-        { "kind": "value", "label": "ADC 采样值 ÷ 20", "bits": [[0, 7]] }
+        {
+          "kind": "value",
+          "label": "最高温度",
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "codec": "signed_i8",
+          "unit": "℃"
+        },
+        {
+          "kind": "value",
+          "label": "ADC 采样值 ÷ 20",
+          "bits": [
+            [
+              0,
+              7
+            ]
+          ]
+        }
       ]
     },
     "90": {
@@ -122,14 +346,38 @@
         {
           "kind": "select",
           "options": [
-            { "value": 0, "label": "空闲" },
-            { "value": 1, "label": "迎宾灯效" },
-            { "value": 2, "label": "骑行灯效" },
-            { "value": 3, "label": "停车灯效" },
-            { "value": 4, "label": "关机灯效" },
-            { "value": 5, "label": "寻车灯效" },
-            { "value": 6, "label": "告警灯效" },
-            { "value": 7, "label": "倾倒灯效" }
+            {
+              "value": 0,
+              "label": "空闲"
+            },
+            {
+              "value": 1,
+              "label": "迎宾灯效"
+            },
+            {
+              "value": 2,
+              "label": "骑行灯效"
+            },
+            {
+              "value": 3,
+              "label": "停车灯效"
+            },
+            {
+              "value": 4,
+              "label": "关机灯效"
+            },
+            {
+              "value": 5,
+              "label": "寻车灯效"
+            },
+            {
+              "value": 6,
+              "label": "告警灯效"
+            },
+            {
+              "value": 7,
+              "label": "倾倒灯效"
+            }
           ]
         }
       ]
@@ -142,45 +390,115 @@
         {
           "kind": "select",
           "label": "灯光类型",
-          "bits": [[8, 15]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5A",
           "options": [
-            { "value": 0, "label": "常亮" },
-            { "value": 1, "label": "流水" },
-            { "value": 2, "label": "渐变" },
-            { "value": 3, "label": "爆闪" },
-            { "value": 4, "label": "流星" }
+            {
+              "value": 0,
+              "label": "常亮"
+            },
+            {
+              "value": 1,
+              "label": "流水"
+            },
+            {
+              "value": 2,
+              "label": "渐变"
+            },
+            {
+              "value": 3,
+              "label": "爆闪"
+            },
+            {
+              "value": 4,
+              "label": "流星"
+            }
           ]
         },
         {
           "kind": "select",
           "label": "颜色类型",
-          "bits": [[6, 7]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              6,
+              7
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5B",
           "options": [
-            { "value": 0, "label": "单色" },
-            { "value": 1, "label": "炫彩" }
+            {
+              "value": 0,
+              "label": "单色"
+            },
+            {
+              "value": 1,
+              "label": "炫彩"
+            }
           ]
         },
         {
           "kind": "select",
           "label": "速度",
-          "bits": [[3, 5]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              3,
+              5
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5C",
           "options": [
-            { "value": 0, "label": "低速" },
-            { "value": 1, "label": "中速" },
-            { "value": 2, "label": "高速" }
+            {
+              "value": 0,
+              "label": "低速"
+            },
+            {
+              "value": 1,
+              "label": "中速"
+            },
+            {
+              "value": 2,
+              "label": "高速"
+            }
           ]
         },
         {
           "kind": "switch",
           "label": "允许工作",
-          "bits": [[2, 2]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              2,
+              2
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5D",
           "on": "允许",
           "off": "禁止"
@@ -192,9 +510,42 @@
       "writable": true,
       "label": "迎宾灯效颜色（RGB）",
       "content": [
-        { "kind": "value", "label": "红 R", "bits": [[24, 31]], "min": 0, "max": 255 },
-        { "kind": "value", "label": "绿 G", "bits": [[16, 23]], "min": 0, "max": 255 },
-        { "kind": "value", "label": "蓝 B", "bits": [[8, 15]], "min": 0, "max": 255 }
+        {
+          "kind": "value",
+          "label": "红 R",
+          "bits": [
+            [
+              24,
+              31
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        },
+        {
+          "kind": "value",
+          "label": "绿 G",
+          "bits": [
+            [
+              16,
+              23
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        },
+        {
+          "kind": "value",
+          "label": "蓝 B",
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        }
       ]
     },
     "102": {
@@ -204,7 +555,12 @@
       "content": [
         {
           "kind": "value",
-          "bits": [[0, 7]],
+          "bits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5A",
           "min": 10,
           "max": 100,
@@ -220,45 +576,115 @@
         {
           "kind": "select",
           "label": "灯光类型",
-          "bits": [[8, 15]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5A",
           "options": [
-            { "value": 0, "label": "常亮" },
-            { "value": 1, "label": "流水" },
-            { "value": 2, "label": "渐变" },
-            { "value": 3, "label": "爆闪" },
-            { "value": 4, "label": "流星" }
+            {
+              "value": 0,
+              "label": "常亮"
+            },
+            {
+              "value": 1,
+              "label": "流水"
+            },
+            {
+              "value": 2,
+              "label": "渐变"
+            },
+            {
+              "value": 3,
+              "label": "爆闪"
+            },
+            {
+              "value": 4,
+              "label": "流星"
+            }
           ]
         },
         {
           "kind": "select",
           "label": "颜色类型",
-          "bits": [[6, 7]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              6,
+              7
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5B",
           "options": [
-            { "value": 0, "label": "单色" },
-            { "value": 1, "label": "炫彩" }
+            {
+              "value": 0,
+              "label": "单色"
+            },
+            {
+              "value": 1,
+              "label": "炫彩"
+            }
           ]
         },
         {
           "kind": "select",
           "label": "速度",
-          "bits": [[3, 5]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              3,
+              5
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5C",
           "options": [
-            { "value": 0, "label": "低速" },
-            { "value": 1, "label": "中速" },
-            { "value": 2, "label": "高速" }
+            {
+              "value": 0,
+              "label": "低速"
+            },
+            {
+              "value": 1,
+              "label": "中速"
+            },
+            {
+              "value": 2,
+              "label": "高速"
+            }
           ]
         },
         {
           "kind": "switch",
           "label": "允许工作",
-          "bits": [[2, 2]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              2,
+              2
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5D",
           "on": "允许",
           "off": "禁止"
@@ -270,9 +696,42 @@
       "writable": true,
       "label": "骑行灯效颜色（RGB）",
       "content": [
-        { "kind": "value", "label": "红 R", "bits": [[24, 31]], "min": 0, "max": 255 },
-        { "kind": "value", "label": "绿 G", "bits": [[16, 23]], "min": 0, "max": 255 },
-        { "kind": "value", "label": "蓝 B", "bits": [[8, 15]], "min": 0, "max": 255 }
+        {
+          "kind": "value",
+          "label": "红 R",
+          "bits": [
+            [
+              24,
+              31
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        },
+        {
+          "kind": "value",
+          "label": "绿 G",
+          "bits": [
+            [
+              16,
+              23
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        },
+        {
+          "kind": "value",
+          "label": "蓝 B",
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        }
       ]
     },
     "105": {
@@ -280,7 +739,19 @@
       "writable": true,
       "label": "骑行灯效亮度",
       "content": [
-        { "kind": "value", "bits": [[0, 7]], "writePrefixHex": "0x5A", "min": 10, "max": 100, "unit": "%" }
+        {
+          "kind": "value",
+          "bits": [
+            [
+              0,
+              7
+            ]
+          ],
+          "writePrefixHex": "0x5A",
+          "min": 10,
+          "max": 100,
+          "unit": "%"
+        }
       ]
     },
     "106": {
@@ -291,45 +762,115 @@
         {
           "kind": "select",
           "label": "灯光类型",
-          "bits": [[8, 15]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5A",
           "options": [
-            { "value": 0, "label": "常亮" },
-            { "value": 1, "label": "流水" },
-            { "value": 2, "label": "渐变" },
-            { "value": 3, "label": "爆闪" },
-            { "value": 4, "label": "流星" }
+            {
+              "value": 0,
+              "label": "常亮"
+            },
+            {
+              "value": 1,
+              "label": "流水"
+            },
+            {
+              "value": 2,
+              "label": "渐变"
+            },
+            {
+              "value": 3,
+              "label": "爆闪"
+            },
+            {
+              "value": 4,
+              "label": "流星"
+            }
           ]
         },
         {
           "kind": "select",
           "label": "颜色类型",
-          "bits": [[6, 7]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              6,
+              7
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5B",
           "options": [
-            { "value": 0, "label": "单色" },
-            { "value": 1, "label": "炫彩" }
+            {
+              "value": 0,
+              "label": "单色"
+            },
+            {
+              "value": 1,
+              "label": "炫彩"
+            }
           ]
         },
         {
           "kind": "select",
           "label": "速度",
-          "bits": [[3, 5]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              3,
+              5
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5C",
           "options": [
-            { "value": 0, "label": "低速" },
-            { "value": 1, "label": "中速" },
-            { "value": 2, "label": "高速" }
+            {
+              "value": 0,
+              "label": "低速"
+            },
+            {
+              "value": 1,
+              "label": "中速"
+            },
+            {
+              "value": 2,
+              "label": "高速"
+            }
           ]
         },
         {
           "kind": "switch",
           "label": "允许工作",
-          "bits": [[2, 2]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              2,
+              2
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5D",
           "on": "允许",
           "off": "禁止"
@@ -341,9 +882,42 @@
       "writable": true,
       "label": "停车灯效颜色（RGB）",
       "content": [
-        { "kind": "value", "label": "红 R", "bits": [[24, 31]], "min": 0, "max": 255 },
-        { "kind": "value", "label": "绿 G", "bits": [[16, 23]], "min": 0, "max": 255 },
-        { "kind": "value", "label": "蓝 B", "bits": [[8, 15]], "min": 0, "max": 255 }
+        {
+          "kind": "value",
+          "label": "红 R",
+          "bits": [
+            [
+              24,
+              31
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        },
+        {
+          "kind": "value",
+          "label": "绿 G",
+          "bits": [
+            [
+              16,
+              23
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        },
+        {
+          "kind": "value",
+          "label": "蓝 B",
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        }
       ]
     },
     "108": {
@@ -351,7 +925,19 @@
       "writable": true,
       "label": "停车灯效亮度",
       "content": [
-        { "kind": "value", "bits": [[0, 7]], "writePrefixHex": "0x5A", "min": 10, "max": 100, "unit": "%" }
+        {
+          "kind": "value",
+          "bits": [
+            [
+              0,
+              7
+            ]
+          ],
+          "writePrefixHex": "0x5A",
+          "min": 10,
+          "max": 100,
+          "unit": "%"
+        }
       ]
     },
     "109": {
@@ -362,45 +948,115 @@
         {
           "kind": "select",
           "label": "灯光类型",
-          "bits": [[8, 15]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5A",
           "options": [
-            { "value": 0, "label": "常亮" },
-            { "value": 1, "label": "流水" },
-            { "value": 2, "label": "渐变" },
-            { "value": 3, "label": "爆闪" },
-            { "value": 4, "label": "流星" }
+            {
+              "value": 0,
+              "label": "常亮"
+            },
+            {
+              "value": 1,
+              "label": "流水"
+            },
+            {
+              "value": 2,
+              "label": "渐变"
+            },
+            {
+              "value": 3,
+              "label": "爆闪"
+            },
+            {
+              "value": 4,
+              "label": "流星"
+            }
           ]
         },
         {
           "kind": "select",
           "label": "颜色类型",
-          "bits": [[6, 7]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              6,
+              7
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5B",
           "options": [
-            { "value": 0, "label": "单色" },
-            { "value": 1, "label": "炫彩" }
+            {
+              "value": 0,
+              "label": "单色"
+            },
+            {
+              "value": 1,
+              "label": "炫彩"
+            }
           ]
         },
         {
           "kind": "select",
           "label": "速度",
-          "bits": [[3, 5]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              3,
+              5
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5C",
           "options": [
-            { "value": 0, "label": "低速" },
-            { "value": 1, "label": "中速" },
-            { "value": 2, "label": "高速" }
+            {
+              "value": 0,
+              "label": "低速"
+            },
+            {
+              "value": 1,
+              "label": "中速"
+            },
+            {
+              "value": 2,
+              "label": "高速"
+            }
           ]
         },
         {
           "kind": "switch",
           "label": "允许工作",
-          "bits": [[2, 2]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              2,
+              2
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5D",
           "on": "允许",
           "off": "禁止"
@@ -412,9 +1068,42 @@
       "writable": true,
       "label": "关机灯效颜色（RGB）",
       "content": [
-        { "kind": "value", "label": "红 R", "bits": [[24, 31]], "min": 0, "max": 255 },
-        { "kind": "value", "label": "绿 G", "bits": [[16, 23]], "min": 0, "max": 255 },
-        { "kind": "value", "label": "蓝 B", "bits": [[8, 15]], "min": 0, "max": 255 }
+        {
+          "kind": "value",
+          "label": "红 R",
+          "bits": [
+            [
+              24,
+              31
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        },
+        {
+          "kind": "value",
+          "label": "绿 G",
+          "bits": [
+            [
+              16,
+              23
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        },
+        {
+          "kind": "value",
+          "label": "蓝 B",
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        }
       ]
     },
     "111": {
@@ -422,7 +1111,19 @@
       "writable": true,
       "label": "关机灯效亮度",
       "content": [
-        { "kind": "value", "bits": [[0, 7]], "writePrefixHex": "0x5A", "min": 10, "max": 100, "unit": "%" }
+        {
+          "kind": "value",
+          "bits": [
+            [
+              0,
+              7
+            ]
+          ],
+          "writePrefixHex": "0x5A",
+          "min": 10,
+          "max": 100,
+          "unit": "%"
+        }
       ]
     },
     "112": {
@@ -433,45 +1134,115 @@
         {
           "kind": "select",
           "label": "灯光类型",
-          "bits": [[8, 15]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5A",
           "options": [
-            { "value": 0, "label": "常亮" },
-            { "value": 1, "label": "流水" },
-            { "value": 2, "label": "渐变" },
-            { "value": 3, "label": "爆闪" },
-            { "value": 4, "label": "流星" }
+            {
+              "value": 0,
+              "label": "常亮"
+            },
+            {
+              "value": 1,
+              "label": "流水"
+            },
+            {
+              "value": 2,
+              "label": "渐变"
+            },
+            {
+              "value": 3,
+              "label": "爆闪"
+            },
+            {
+              "value": 4,
+              "label": "流星"
+            }
           ]
         },
         {
           "kind": "select",
           "label": "颜色类型",
-          "bits": [[6, 7]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              6,
+              7
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5B",
           "options": [
-            { "value": 0, "label": "单色" },
-            { "value": 1, "label": "炫彩" }
+            {
+              "value": 0,
+              "label": "单色"
+            },
+            {
+              "value": 1,
+              "label": "炫彩"
+            }
           ]
         },
         {
           "kind": "select",
           "label": "速度",
-          "bits": [[3, 5]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              3,
+              5
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5C",
           "options": [
-            { "value": 0, "label": "低速" },
-            { "value": 1, "label": "中速" },
-            { "value": 2, "label": "高速" }
+            {
+              "value": 0,
+              "label": "低速"
+            },
+            {
+              "value": 1,
+              "label": "中速"
+            },
+            {
+              "value": 2,
+              "label": "高速"
+            }
           ]
         },
         {
           "kind": "switch",
           "label": "允许工作",
-          "bits": [[2, 2]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              2,
+              2
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5D",
           "on": "允许",
           "off": "禁止"
@@ -483,9 +1254,42 @@
       "writable": true,
       "label": "寻车灯效颜色（RGB）",
       "content": [
-        { "kind": "value", "label": "红 R", "bits": [[24, 31]], "min": 0, "max": 255 },
-        { "kind": "value", "label": "绿 G", "bits": [[16, 23]], "min": 0, "max": 255 },
-        { "kind": "value", "label": "蓝 B", "bits": [[8, 15]], "min": 0, "max": 255 }
+        {
+          "kind": "value",
+          "label": "红 R",
+          "bits": [
+            [
+              24,
+              31
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        },
+        {
+          "kind": "value",
+          "label": "绿 G",
+          "bits": [
+            [
+              16,
+              23
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        },
+        {
+          "kind": "value",
+          "label": "蓝 B",
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        }
       ]
     },
     "114": {
@@ -493,7 +1297,19 @@
       "writable": true,
       "label": "寻车灯效亮度",
       "content": [
-        { "kind": "value", "bits": [[0, 7]], "writePrefixHex": "0x5A", "min": 10, "max": 100, "unit": "%" }
+        {
+          "kind": "value",
+          "bits": [
+            [
+              0,
+              7
+            ]
+          ],
+          "writePrefixHex": "0x5A",
+          "min": 10,
+          "max": 100,
+          "unit": "%"
+        }
       ]
     },
     "115": {
@@ -504,45 +1320,115 @@
         {
           "kind": "select",
           "label": "灯光类型",
-          "bits": [[8, 15]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5A",
           "options": [
-            { "value": 0, "label": "常亮" },
-            { "value": 1, "label": "流水" },
-            { "value": 2, "label": "渐变" },
-            { "value": 3, "label": "爆闪" },
-            { "value": 4, "label": "流星" }
+            {
+              "value": 0,
+              "label": "常亮"
+            },
+            {
+              "value": 1,
+              "label": "流水"
+            },
+            {
+              "value": 2,
+              "label": "渐变"
+            },
+            {
+              "value": 3,
+              "label": "爆闪"
+            },
+            {
+              "value": 4,
+              "label": "流星"
+            }
           ]
         },
         {
           "kind": "select",
           "label": "颜色类型",
-          "bits": [[6, 7]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              6,
+              7
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5B",
           "options": [
-            { "value": 0, "label": "单色" },
-            { "value": 1, "label": "炫彩" }
+            {
+              "value": 0,
+              "label": "单色"
+            },
+            {
+              "value": 1,
+              "label": "炫彩"
+            }
           ]
         },
         {
           "kind": "select",
           "label": "速度",
-          "bits": [[3, 5]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              3,
+              5
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5C",
           "options": [
-            { "value": 0, "label": "低速" },
-            { "value": 1, "label": "中速" },
-            { "value": 2, "label": "高速" }
+            {
+              "value": 0,
+              "label": "低速"
+            },
+            {
+              "value": 1,
+              "label": "中速"
+            },
+            {
+              "value": 2,
+              "label": "高速"
+            }
           ]
         },
         {
           "kind": "switch",
           "label": "允许工作",
-          "bits": [[2, 2]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              2,
+              2
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5D",
           "on": "允许",
           "off": "禁止"
@@ -554,9 +1440,42 @@
       "writable": true,
       "label": "告警灯效颜色（RGB）",
       "content": [
-        { "kind": "value", "label": "红 R", "bits": [[24, 31]], "min": 0, "max": 255 },
-        { "kind": "value", "label": "绿 G", "bits": [[16, 23]], "min": 0, "max": 255 },
-        { "kind": "value", "label": "蓝 B", "bits": [[8, 15]], "min": 0, "max": 255 }
+        {
+          "kind": "value",
+          "label": "红 R",
+          "bits": [
+            [
+              24,
+              31
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        },
+        {
+          "kind": "value",
+          "label": "绿 G",
+          "bits": [
+            [
+              16,
+              23
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        },
+        {
+          "kind": "value",
+          "label": "蓝 B",
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        }
       ]
     },
     "117": {
@@ -564,7 +1483,19 @@
       "writable": true,
       "label": "告警灯效亮度",
       "content": [
-        { "kind": "value", "bits": [[0, 7]], "writePrefixHex": "0x5A", "min": 10, "max": 100, "unit": "%" }
+        {
+          "kind": "value",
+          "bits": [
+            [
+              0,
+              7
+            ]
+          ],
+          "writePrefixHex": "0x5A",
+          "min": 10,
+          "max": 100,
+          "unit": "%"
+        }
       ]
     },
     "118": {
@@ -575,45 +1506,115 @@
         {
           "kind": "select",
           "label": "灯光类型",
-          "bits": [[8, 15]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5A",
           "options": [
-            { "value": 0, "label": "常亮" },
-            { "value": 1, "label": "流水" },
-            { "value": 2, "label": "渐变" },
-            { "value": 3, "label": "爆闪" },
-            { "value": 4, "label": "流星" }
+            {
+              "value": 0,
+              "label": "常亮"
+            },
+            {
+              "value": 1,
+              "label": "流水"
+            },
+            {
+              "value": 2,
+              "label": "渐变"
+            },
+            {
+              "value": 3,
+              "label": "爆闪"
+            },
+            {
+              "value": 4,
+              "label": "流星"
+            }
           ]
         },
         {
           "kind": "select",
           "label": "颜色类型",
-          "bits": [[6, 7]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              6,
+              7
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5B",
           "options": [
-            { "value": 0, "label": "单色" },
-            { "value": 1, "label": "炫彩" }
+            {
+              "value": 0,
+              "label": "单色"
+            },
+            {
+              "value": 1,
+              "label": "炫彩"
+            }
           ]
         },
         {
           "kind": "select",
           "label": "速度",
-          "bits": [[3, 5]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              3,
+              5
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5C",
           "options": [
-            { "value": 0, "label": "低速" },
-            { "value": 1, "label": "中速" },
-            { "value": 2, "label": "高速" }
+            {
+              "value": 0,
+              "label": "低速"
+            },
+            {
+              "value": 1,
+              "label": "中速"
+            },
+            {
+              "value": 2,
+              "label": "高速"
+            }
           ]
         },
         {
           "kind": "switch",
           "label": "允许工作",
-          "bits": [[2, 2]],
-          "writeBits": [[0, 7]],
+          "bits": [
+            [
+              2,
+              2
+            ]
+          ],
+          "writeBits": [
+            [
+              0,
+              7
+            ]
+          ],
           "writePrefixHex": "0x5D",
           "on": "允许",
           "off": "禁止"
@@ -625,9 +1626,42 @@
       "writable": true,
       "label": "倾倒灯效颜色（RGB）",
       "content": [
-        { "kind": "value", "label": "红 R", "bits": [[24, 31]], "min": 0, "max": 255 },
-        { "kind": "value", "label": "绿 G", "bits": [[16, 23]], "min": 0, "max": 255 },
-        { "kind": "value", "label": "蓝 B", "bits": [[8, 15]], "min": 0, "max": 255 }
+        {
+          "kind": "value",
+          "label": "红 R",
+          "bits": [
+            [
+              24,
+              31
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        },
+        {
+          "kind": "value",
+          "label": "绿 G",
+          "bits": [
+            [
+              16,
+              23
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        },
+        {
+          "kind": "value",
+          "label": "蓝 B",
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "min": 0,
+          "max": 255
+        }
       ]
     },
     "120": {
@@ -635,7 +1669,19 @@
       "writable": true,
       "label": "倾倒灯效亮度",
       "content": [
-        { "kind": "value", "bits": [[0, 7]], "writePrefixHex": "0x5A", "min": 10, "max": 100, "unit": "%" }
+        {
+          "kind": "value",
+          "bits": [
+            [
+              0,
+              7
+            ]
+          ],
+          "writePrefixHex": "0x5A",
+          "min": 10,
+          "max": 100,
+          "unit": "%"
+        }
       ]
     },
     "500": {
@@ -643,13 +1689,32 @@
       "writable": true,
       "writePrefixHex": "0x5A",
       "label": "加热转把",
-      "content": [{ "kind": "switch", "bits": [[0, 0]], "on": "加热中", "off": "已停止" }]
+      "content": [
+        {
+          "kind": "switch",
+          "bits": [
+            [
+              0,
+              0
+            ]
+          ],
+          "on": "加热中",
+          "off": "已停止"
+        }
+      ]
     },
     "501": {
       "bytes": 2,
       "writable": true,
       "label": "目标加热温度",
-      "content": [{ "kind": "value", "min": 20, "max": 60, "unit": "℃" }]
+      "content": [
+        {
+          "kind": "value",
+          "min": 20,
+          "max": 60,
+          "unit": "℃"
+        }
+      ]
     },
     "502": {
       "bytes": 2,
@@ -659,8 +1724,14 @@
         {
           "kind": "select",
           "options": [
-            { "value": 23040, "label": "不自动加热" },
-            { "value": 23041, "label": "自动加热一次" }
+            {
+              "value": 23040,
+              "label": "不自动加热"
+            },
+            {
+              "value": 23041,
+              "label": "自动加热一次"
+            }
           ]
         }
       ]
@@ -668,14 +1739,38 @@
     "503": {
       "bytes": 2,
       "label": "加热转把故障码",
-      "content": [{ "kind": "value" }]
+      "content": [
+        {
+          "kind": "value"
+        }
+      ]
     },
     "504": {
       "bytes": 2,
       "label": "加热转把当前温度",
       "content": [
-        { "kind": "value", "label": "最高温度", "bits": [[8, 15]], "codec": "signed_i8", "unit": "℃" },
-        { "kind": "value", "label": "ADC 采样值 ÷ 20", "bits": [[0, 7]] }
+        {
+          "kind": "value",
+          "label": "最高温度",
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "codec": "signed_i8",
+          "unit": "℃"
+        },
+        {
+          "kind": "value",
+          "label": "ADC 采样值 ÷ 20",
+          "bits": [
+            [
+              0,
+              7
+            ]
+          ]
+        }
       ]
     }
   },

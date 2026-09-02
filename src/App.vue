@@ -18,16 +18,32 @@ const license = reactive({
   status: { authorized: false, deviceId: "", message: null } as LicenseStatus,
 })
 
+const sleep = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms))
+
+const readLicenseStatus = async (): Promise<LicenseStatus | null> => {
+  try {
+    return await Promise.race([
+      tauriApi.licenseStatus(),
+      new Promise<null>((resolve) => window.setTimeout(() => resolve(null), 250)),
+    ])
+  } catch {
+    return null
+  }
+}
+
 onMounted(async () => {
   try {
-    const deadline = Date.now() + 2500
+    const deadline = Date.now() + 6000
     while (Date.now() < deadline) {
-      license.status = await tauriApi.licenseStatus()
-      if (license.status.authorized || license.status.message) break
-      await new Promise((resolve) => window.setTimeout(resolve, 150))
+      const status = await readLicenseStatus()
+      if (status) {
+        license.status = status
+        break
+      }
+      await sleep(250)
     }
     if (!license.status.authorized && !license.status.message) {
-      license.status.message = "设备授权检查超时"
+      license.status.message = "应用启动超时，请重新启动"
     }
   } catch (error) {
     license.status = {
@@ -42,12 +58,16 @@ onMounted(async () => {
 </script>
 
 <template>
+  <main v-if="license.loading" class="startup-status" role="status" aria-live="polite">
+    <span class="startup-spinner" aria-hidden="true"></span>
+    <strong>启动中</strong>
+  </main>
   <LicenseBlockedPage
-    v-if="!license.loading && !license.status.authorized"
+    v-else-if="!license.status.authorized"
     :device-id="license.status.deviceId"
     :message="license.status.message"
   />
-  <div v-else-if="!license.loading" class="app">
+  <div v-else class="app">
     <AppHeader />
     <main class="main">
       <Transition name="page" mode="out-in">
@@ -104,6 +124,33 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.startup-status {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+}
+.startup-status strong {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+.startup-spinner {
+  width: 26px;
+  height: 26px;
+  margin-bottom: 4px;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: startup-spin 0.8s linear infinite;
+}
+@keyframes startup-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 .app {
   min-height: 100vh;
   min-height: 100dvh;

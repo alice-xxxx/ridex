@@ -8,7 +8,7 @@ mod serial;
 
 use std::sync::{
     atomic::{AtomicBool, Ordering},
-    Arc, LazyLock,
+    Arc, LazyLock, OnceLock,
 };
 
 use tauri::{AppHandle, Manager, State};
@@ -21,9 +21,21 @@ use ota::{OtaFileInfo, OtaPackRequest, OtaStartResult};
 static CHANNEL: LazyLock<Mutex<Option<AnyChannel>>> = LazyLock::new(|| Mutex::new(None));
 static OTA_STOP: LazyLock<Mutex<Option<Arc<AtomicBool>>>> = LazyLock::new(|| Mutex::new(None));
 
+#[derive(Default)]
+struct LicenseState(OnceLock<license::License>);
+
+impl LicenseState {
+    fn ensure_authorized(&self) -> Result<(), String> {
+        self.0
+            .get()
+            .ok_or_else(|| "应用仍在启动".to_string())?
+            .ensure_authorized()
+    }
+}
+
 #[tauri::command]
-fn license_status(status: State<'_, license::License>) -> Result<license::License, String> {
-    Ok(status.inner().clone())
+fn license_status(status: State<'_, LicenseState>) -> Option<license::License> {
+    status.0.get().cloned()
 }
 
 #[tauri::command]
@@ -35,7 +47,7 @@ fn exit_app(app: AppHandle) {
 async fn discover(
     request: DiscoverRequest,
     app: AppHandle,
-    status: State<'_, license::License>,
+    status: State<'_, LicenseState>,
 ) -> Result<Vec<DiscoveredDevice>, String> {
     status.ensure_authorized()?;
     AnyChannel::discover(request, &app).await
@@ -45,7 +57,7 @@ async fn discover(
 fn network_credentials(
     platform: network::NetworkPlatform,
     app: AppHandle,
-    status: State<'_, license::License>,
+    status: State<'_, LicenseState>,
 ) -> Result<network::CredentialStatus, String> {
     status.ensure_authorized()?;
     network::credential_status(&app, platform)
@@ -55,7 +67,7 @@ fn network_credentials(
 async fn connect(
     request: ConnectRequest,
     app: AppHandle,
-    status: State<'_, license::License>,
+    status: State<'_, LicenseState>,
 ) -> Result<(), String> {
     status.ensure_authorized()?;
     let connected = AnyChannel::connect(request, &app).await?;
@@ -68,7 +80,7 @@ async fn connect(
 }
 
 #[tauri::command]
-async fn disconnect(status: State<'_, license::License>) -> Result<(), String> {
+async fn disconnect(status: State<'_, LicenseState>) -> Result<(), String> {
     status.ensure_authorized()?;
     disconnect_active_channel().await
 }
@@ -86,7 +98,7 @@ async fn disconnect_active_channel() -> Result<(), String> {
 async fn authenticate(
     vehicle_code: String,
     timeout_ms: u64,
-    status: State<'_, license::License>,
+    status: State<'_, LicenseState>,
 ) -> Result<(), String> {
     status.ensure_authorized()?;
 
@@ -104,7 +116,7 @@ async fn authenticate(
 async fn modbus_tx(
     protocol: modbus::Protocol,
     timeout_ms: u64,
-    status: State<'_, license::License>,
+    status: State<'_, LicenseState>,
 ) -> Result<modbus::TransactionResult, String> {
     status.ensure_authorized()?;
 
@@ -121,7 +133,7 @@ async fn modbus_tx(
 fn ota_info(
     path: String,
     app: AppHandle,
-    status: State<'_, license::License>,
+    status: State<'_, LicenseState>,
 ) -> Result<OtaFileInfo, String> {
     status.ensure_authorized()?;
     ota::ota_info(path, app)
@@ -133,7 +145,7 @@ fn ota_pack(
     output_path: String,
     request: OtaPackRequest,
     app: AppHandle,
-    status: State<'_, license::License>,
+    status: State<'_, LicenseState>,
 ) -> Result<(), String> {
     status.ensure_authorized()?;
     ota::ota_pack(input_path, output_path, request, app)
@@ -184,7 +196,7 @@ async fn ota_start(
 }
 
 #[tauri::command]
-async fn ota_cancel(status: State<'_, license::License>) -> Result<(), String> {
+async fn ota_cancel(status: State<'_, LicenseState>) -> Result<(), String> {
     status.ensure_authorized()?;
 
     OTA_STOP
@@ -227,16 +239,30 @@ pub fn run() {
 
     builder
         .setup(move |app| {
-            let mut license = match license::License::init(app.handle()) {
-                Ok(license) => license,
-                Err(error) => license::License::unavailable(error),
-            };
-            let should_authorize = license.message.is_none();
-            if should_authorize {
-                let app_handle = app.handle().clone();
-                let _ = tauri::async_runtime::block_on(license.authorize(&app_handle));
+            app.manage(LicenseState::default());
+            let app_handle = app.handle().clone();
+            let fallback_handle = app_handle.clone();
+            if let Err(error) = std::thread::Builder::new()
+                .name("license-initialization".into())
+                .spawn(move || {
+                    let mut license = match license::License::init(&app_handle) {
+                        Ok(license) => license,
+                        Err(error) => license::License::unavailable(error),
+                    };
+                    if license.message.is_none() {
+                        let _ = tauri::async_runtime::block_on(license.authorize(&app_handle));
+                    }
+                    let _ = app_handle.state::<LicenseState>().0.set(license);
+                })
+            {
+                let _ =
+                    fallback_handle
+                        .state::<LicenseState>()
+                        .0
+                        .set(license::License::unavailable(format!(
+                            "无法启动授权任务: {error}"
+                        )));
             }
-            app.manage(license);
             app.get_webview_window("main")
                 .ok_or("main window not found")?
                 .show()?;

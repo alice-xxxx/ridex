@@ -100,7 +100,7 @@ const sourceFirmwareExtensions = [
 
 export const tauriApi = {
   supportsSerial: () => ["windows", "macos", "linux"].includes(platform()),
-  licenseStatus: (): Promise<LicenseStatus> => invoke("license_status"),
+  licenseStatus: (): Promise<LicenseStatus | null> => invoke("license_status"),
   exitApp: (): Promise<void> => invoke("exit_app"),
 
   discover: (request: DiscoverRequest): Promise<DiscoveredEndpoint[]> =>

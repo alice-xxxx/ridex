@@ -2821,43 +2821,93 @@
       "bytes": 2,
       "writable": false,
       "label": "IMU 加速度 X",
-      "content": [{ "kind": "value", "codec": "signed_integer", "unit": "mg" }]
+      "content": [
+        {
+          "kind": "value",
+          "codec": "signed_integer",
+          "unit": "mg"
+        }
+      ]
     },
     "105": {
       "bytes": 2,
       "writable": false,
       "label": "IMU 加速度 Y",
-      "content": [{ "kind": "value", "codec": "signed_integer", "unit": "mg" }]
+      "content": [
+        {
+          "kind": "value",
+          "codec": "signed_integer",
+          "unit": "mg"
+        }
+      ]
     },
     "106": {
       "bytes": 2,
       "writable": false,
       "label": "IMU 加速度 Z",
-      "content": [{ "kind": "value", "codec": "signed_integer", "unit": "mg" }]
+      "content": [
+        {
+          "kind": "value",
+          "codec": "signed_integer",
+          "unit": "mg"
+        }
+      ]
     },
     "107": {
       "bytes": 2,
       "writable": false,
       "label": "IMU 角速度 X",
-      "content": [{ "kind": "value", "codec": "signed_integer", "scale": 0.1, "precision": 1, "unit": "dps" }]
+      "content": [
+        {
+          "kind": "value",
+          "codec": "signed_integer",
+          "scale": 0.1,
+          "precision": 1,
+          "unit": "dps"
+        }
+      ]
     },
     "108": {
       "bytes": 2,
       "writable": false,
       "label": "IMU 角速度 Y",
-      "content": [{ "kind": "value", "codec": "signed_integer", "scale": 0.1, "precision": 1, "unit": "dps" }]
+      "content": [
+        {
+          "kind": "value",
+          "codec": "signed_integer",
+          "scale": 0.1,
+          "precision": 1,
+          "unit": "dps"
+        }
+      ]
     },
     "109": {
       "bytes": 2,
       "writable": false,
       "label": "IMU 角速度 Z",
-      "content": [{ "kind": "value", "codec": "signed_integer", "scale": 0.1, "precision": 1, "unit": "dps" }]
+      "content": [
+        {
+          "kind": "value",
+          "codec": "signed_integer",
+          "scale": 0.1,
+          "precision": 1,
+          "unit": "dps"
+        }
+      ]
     },
     "110": {
       "bytes": 2,
       "writable": false,
       "label": "整车 Z 轴转向角速度",
-      "content": [{ "kind": "value", "codec": "signed_integer", "scale": 0.1, "precision": 1, "unit": "dps" }]
+      "content": [
+        {
+          "kind": "value",
+          "codec": "signed_integer",
+          "scale": 0.1,
+          "precision": 1,
+          "unit": "dps"
+        }
+      ]
     },
     "111": {
       "bytes": 2,
@@ -2867,11 +2917,26 @@
         {
           "kind": "select",
           "options": [
-            { "value": 0, "label": "直行" },
-            { "value": 1, "label": "预左转" },
-            { "value": 2, "label": "左转" },
-            { "value": 3, "label": "预右转" },
-            { "value": 4, "label": "右转" }
+            {
+              "value": 0,
+              "label": "直行"
+            },
+            {
+              "value": 1,
+              "label": "预左转"
+            },
+            {
+              "value": 2,
+              "label": "左转"
+            },
+            {
+              "value": 3,
+              "label": "预右转"
+            },
+            {
+              "value": 4,
+              "label": "右转"
+            }
           ]
         }
       ]
@@ -2884,8 +2949,14 @@
         {
           "kind": "select",
           "options": [
-            { "value": 0, "label": "未刷新" },
-            { "value": 1, "label": "已刷新" }
+            {
+              "value": 0,
+              "label": "未刷新"
+            },
+            {
+              "value": 1,
+              "label": "已刷新"
+            }
           ]
         }
       ]
@@ -2894,7 +2965,11 @@
       "bytes": 1,
       "writable": false,
       "label": "TFT 心跳数据",
-      "content": [{ "kind": "hex" }]
+      "content": [
+        {
+          "kind": "hex"
+        }
+      ]
     },
     "235": {
       "bytes": 4,
@@ -3361,9 +3436,18 @@
         {
           "kind": "select",
           "options": [
-            { "value": 0, "label": "安卓" },
-            { "value": 1, "label": "苹果" },
-            { "value": 2, "label": "鸿蒙" }
+            {
+              "value": 0,
+              "label": "安卓"
+            },
+            {
+              "value": 1,
+              "label": "苹果"
+            },
+            {
+              "value": 2,
+              "label": "鸿蒙"
+            }
           ]
         }
       ]
@@ -3372,13 +3456,27 @@
       "bytes": 2,
       "writable": true,
       "label": "伴我回家延时",
-      "content": [{ "kind": "value", "min": 3, "max": 60, "unit": "秒" }]
+      "content": [
+        {
+          "kind": "value",
+          "min": 3,
+          "max": 60,
+          "unit": "秒"
+        }
+      ]
     },
     "410": {
       "bytes": 2,
       "writable": true,
       "label": "锂电车续航总里程",
-      "content": [{ "kind": "value", "min": 0, "max": 10000, "unit": "km" }]
+      "content": [
+        {
+          "kind": "value",
+          "min": 0,
+          "max": 10000,
+          "unit": "km"
+        }
+      ]
     },
     "500": {
       "bytes": 2,
@@ -3916,7 +4014,12 @@
       "content": [
         {
           "kind": "switch",
-          "bits": [[0, 0]],
+          "bits": [
+            [
+              0,
+              0
+            ]
+          ],
           "on": "开启",
           "off": "关闭"
         }
