@@ -158,7 +158,7 @@ async fn ota_start(
     is_ota: bool,
     request: OtaPackRequest,
     cycles: u16,
-    status: State<'_, license::License>,
+    status: State<'_, LicenseState>,
 ) -> Result<OtaStartResult, String> {
     status.ensure_authorized()?;
 
