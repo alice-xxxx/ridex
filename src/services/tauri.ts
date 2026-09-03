@@ -73,7 +73,7 @@ function discoveredEndpoint(device: BackendDiscoveredDevice): DiscoveredEndpoint
 }
 
 const invokeModbus = (protocol: ModbusRequest): Promise<ModbusResponse> =>
-  invoke("modbus_tx", { protocol, timeoutMs: 10000 })
+  invoke("modbus_tx", { protocol, timeoutMs: 3000 })
 
 const sourceFirmwareExtensions = [
   "bin",
@@ -115,7 +115,7 @@ export const tauriApi = {
   },
   disconnect: (): Promise<void> => invoke("disconnect"),
   authenticate: (vehicleCode: string): Promise<void> =>
-    invoke("authenticate", { vehicleCode, timeoutMs: 5000 }),
+    invoke("authenticate", { vehicleCode, timeoutMs: 3000 }),
 
   readRegisters: (param: ReadModbusParam): Promise<ModbusResponse> =>
     invokeModbus({ operation: "readRegisters", ...param }),

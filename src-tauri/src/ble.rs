@@ -133,25 +133,38 @@ impl BleChannel {
         };
 
         let (sender, mut receiver) = mpsc::channel(100);
-        handler()?
+        let scanner = handler()?;
+        scanner
             .discover(Some(sender), timeout_ms, filter, false)
             .await
             .map_err(plugin_error)?;
 
         let mut devices = HashMap::new();
-        let collect = async {
-            while let Some(batch) = receiver.recv().await {
-                for device in batch {
-                    devices.insert(device.address.clone(), device);
+        let deadline = Instant::now() + Duration::from_millis(timeout_ms);
+        loop {
+            let Some(remaining) = deadline.checked_duration_since(Instant::now()) else {
+                // blec 的扫描任务在向结果通道发送数据时使用 expect。必须先停止该
+                // 任务，等它释放 sender 后才能结束接收，否则 Android release 的
+                // panic=abort 会直接退出整个应用。
+                scanner.stop_scan().await.map_err(plugin_error)?;
+                while let Some(batch) = receiver.recv().await {
+                    for device in batch {
+                        devices.insert(device.address.clone(), device);
+                    }
                 }
-            }
-        };
+                break;
+            };
 
-        let _ = timeout(
-            Duration::from_millis(timeout_ms.saturating_add(1_500)),
-            collect,
-        )
-        .await;
+            match timeout(remaining, receiver.recv()).await {
+                Ok(Some(batch)) => {
+                    for device in batch {
+                        devices.insert(device.address.clone(), device);
+                    }
+                }
+                Ok(None) => break,
+                Err(_) => continue,
+            }
+        }
 
         let mut devices: Vec<_> = devices.into_values().collect();
         devices.sort_by(|left, right| {
