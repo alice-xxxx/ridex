@@ -1,0 +1,379 @@
+name: publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      package_mode:
+        description: minimal = EXE + APK + IPA；multi = 全平台多版本
+        type: choice
+        default: minimal
+        options:
+          - minimal
+          - multi
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NPM_CONFIG_AUDIT: 'false'
+  NPM_CONFIG_FUND: 'false'
+  NPM_CONFIG_PREFER_OFFLINE: 'true'
+
+jobs:
+  create-release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    outputs:
+      release_tag: ${{ steps.create-release.outputs.release_tag }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: verify network endpoints
+        shell: bash
+        env:
+          RIDEX_AUTH_URL: ${{ secrets.RIDEX_AUTH_URL }}
+          RIDEX_AUTH_PUBLIC_KEY: ${{ secrets.RIDEX_AUTH_PUBLIC_KEY }}
+        run: |
+          test -n "$RIDEX_AUTH_URL"
+          test -n "$RIDEX_AUTH_PUBLIC_KEY"
+          test "${RIDEX_AUTH_URL#https://}" != "$RIDEX_AUTH_URL"
+
+      - name: get version
+        run: echo "PACKAGE_VERSION=$(jq -r '.version' package.json)" >> "$GITHUB_ENV"
+
+      - name: create release
+        id: create-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="app-v${PACKAGE_VERSION}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            test "$(gh release view "$TAG" --json isDraft -q '.isDraft')" = "true" || {
+              echo "Release $TAG 已发布，请先更新 package.json 版本号"
+              exit 1
+            }
+          else
+            if [ "${{ inputs.package_mode }}" = "minimal" ]; then
+              NOTES="最小打包：Windows EXE、Android arm64 APK 和 iOS 未签名 IPA。"
+            else
+              NOTES="多版本打包：Windows、Linux、macOS、Android 和 iOS。"
+            fi
+            gh release create "$TAG" \
+              --title "App v${PACKAGE_VERSION}" \
+              --notes "$NOTES" \
+              --draft
+          fi
+          echo "release_tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+  build-tauri:
+    needs: create-release
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(inputs.package_mode == 'multi' && '{"include":[{"platform":"macos-latest","artifact":"macos-arm64","rust_target":"aarch64-apple-darwin","args":"--target aarch64-apple-darwin --bundles dmg"},{"platform":"macos-latest","artifact":"macos-x64","rust_target":"x86_64-apple-darwin","args":"--target x86_64-apple-darwin --bundles dmg"},{"platform":"ubuntu-22.04","artifact":"linux-x64","rust_target":"","args":"--bundles appimage,deb"},{"platform":"windows-latest","artifact":"windows-x64","rust_target":"","args":"--bundles nsis,msi"}]}' || '{"include":[{"platform":"windows-latest","artifact":"windows-x64","rust_target":"","args":"--bundles nsis"}]}') }}
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          cache-on-failure: true
+          key: ${{ matrix.artifact }}
+
+      - name: Cache Tauri bundler tools
+        if: runner.os != 'macOS'
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cache/tauri
+            ~/AppData/Local/tauri
+          key: tauri-tools-v2-${{ runner.os }}
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev libudev-dev patchelf xdg-utils
+
+      - name: install frontend dependencies
+        run: npm ci
+
+      - uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RIDEX_AUTH_URL: ${{ secrets.RIDEX_AUTH_URL }}
+          RIDEX_AUTH_PUBLIC_KEY: ${{ secrets.RIDEX_AUTH_PUBLIC_KEY }}
+        with:
+          tagName: ${{ needs.create-release.outputs.release_tag }}
+          releaseName: 'App v__VERSION__'
+          releaseDraft: true
+          prerelease: false
+          uploadUpdaterJson: false
+          args: ${{ matrix.args }}
+
+      - name: Preserve desktop installers
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: RideX-${{ matrix.artifact }}
+          path: |
+            src-tauri/target/**/release/bundle/**/*.exe
+            src-tauri/target/**/release/bundle/**/*.msi
+            src-tauri/target/**/release/bundle/**/*.dmg
+            src-tauri/target/**/release/bundle/**/*.AppImage
+            src-tauri/target/**/release/bundle/**/*.deb
+          if-no-files-found: ignore
+          compression-level: 0
+          overwrite: true
+
+  build-android:
+    name: Build Android APK (${{ matrix.variant }})
+    needs: create-release
+    runs-on: ubuntu-24.04
+    environment: APK_KEY_STORE
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(inputs.package_mode == 'multi' && '{"include":[{"variant":"arm64","tauri_args":"-t aarch64","rust_targets":"aarch64-linux-android","minify":"false"},{"variant":"universal","tauri_args":"","rust_targets":"aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android","minify":"true"}]}' || '{"include":[{"variant":"arm64","tauri_args":"-t aarch64","rust_targets":"aarch64-linux-android","minify":"false"}]}') }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+          cache-dependency-path: |
+            src-tauri/gen/android/**/*.gradle*
+            src-tauri/gen/android/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_targets }}
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          cache-on-failure: true
+          key: android-${{ matrix.variant }}
+
+      - name: Set Android env
+        shell: bash
+        run: |
+          echo "NDK_HOME=$ANDROID_NDK_LATEST_HOME" >> "$GITHUB_ENV"
+          echo "BUILD_TOOLS_DIR=$ANDROID_SDK_ROOT/build-tools/36.0.0" >> "$GITHUB_ENV"
+
+      - name: Configure Android signing
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.APK_KEY_STORE }}
+          KEYSTORE_PASSWORD: ${{ secrets.APK_KEY_PASSWORD }}
+          KEYSTORE_ALIAS: ${{ secrets.APK_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          test -n "$KEYSTORE_BASE64"
+          test -n "$KEYSTORE_PASSWORD"
+          test -n "$KEYSTORE_ALIAS"
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/keystore.jks"
+          keytool -list -keystore "$RUNNER_TEMP/keystore.jks" -storepass "$KEYSTORE_PASSWORD" -alias "$KEYSTORE_ALIAS" >/dev/null
+          {
+            echo "password=$KEYSTORE_PASSWORD"
+            echo "keyAlias=$KEYSTORE_ALIAS"
+            echo "storeFile=${RUNNER_TEMP}/keystore.jks"
+          } > src-tauri/gen/android/keystore.properties
+
+      - name: Build Android APK
+        shell: bash
+        env:
+          RIDEX_AUTH_URL: ${{ secrets.RIDEX_AUTH_URL }}
+          RIDEX_AUTH_PUBLIC_KEY: ${{ secrets.RIDEX_AUTH_PUBLIC_KEY }}
+          NODE_OPTIONS: --max-old-space-size=6144
+          RIDEX_ANDROID_MINIFY: ${{ matrix.minify }}
+        run: |
+          npx tauri android build --apk --ci ${{ matrix.tauri_args }}
+          APK_DIR=src-tauri/gen/android/app/build/outputs/apk/universal/release
+          VERSION=${{ needs.create-release.outputs.release_tag }}
+          cp "${APK_DIR}/app-universal-release.apk" "RideX-${VERSION}-${{ matrix.variant }}.apk"
+
+      - name: Verify APK signature
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=(RideX-*-${{ matrix.variant }}.apk)
+          if [ "${{ matrix.variant }}" = "arm64" ]; then
+            unzip -Z1 "${APK[0]}" | grep '^lib/arm64-v8a/' >/dev/null
+            if unzip -Z1 "${APK[0]}" | grep -E '^lib/(armeabi-v7a|x86|x86_64)/' >/dev/null; then
+              echo "Arm64 APK contains non-arm64 native libraries"
+              exit 1
+            fi
+          fi
+          "$BUILD_TOOLS_DIR/apksigner" verify --verbose "${APK[0]}"
+          "$BUILD_TOOLS_DIR/aapt" dump badging "${APK[0]}" | sed -n '1,5p'
+
+      - name: Upload APK to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          APK=(RideX-*-${{ matrix.variant }}.apk)
+          gh release upload ${{ needs.create-release.outputs.release_tag }} "${APK[0]}" --clobber
+
+      - name: Preserve built APKs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: RideX-android-${{ matrix.variant }}
+          path: |
+            RideX-*.apk
+            src-tauri/gen/android/app/build/outputs/**/*.apk
+          if-no-files-found: ignore
+          compression-level: 0
+          overwrite: true
+
+  build-ios:
+    name: Build iOS Unsigned IPA
+    needs: create-release
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          cache-on-failure: true
+
+      - name: Select Xcode
+        shell: bash
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Initialize iOS project
+        shell: bash
+        run: |
+          npx tauri ios init --ci
+          test -d src-tauri/gen/apple
+
+      - name: Generate iOS icons
+        shell: bash
+        run: |
+          test -s app-icon.png
+          npm run tauri icon
+          test -s src-tauri/gen/apple/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png
+
+      - name: Build iOS app
+        shell: bash
+        env:
+          CI: true
+          RIDEX_AUTH_URL: ${{ secrets.RIDEX_AUTH_URL }}
+          RIDEX_AUTH_PUBLIC_KEY: ${{ secrets.RIDEX_AUTH_PUBLIC_KEY }}
+          NODE_OPTIONS: --max-old-space-size=6144
+        run: |
+          test -n "$RIDEX_AUTH_URL"
+          test -n "$RIDEX_AUTH_PUBLIC_KEY"
+          umask 077
+          trap 'rm -f src-tauri/.garow-build.env' EXIT
+          {
+            printf 'RIDEX_AUTH_URL=%s\n' "$RIDEX_AUTH_URL"
+            printf 'RIDEX_AUTH_PUBLIC_KEY=%s\n' "$RIDEX_AUTH_PUBLIC_KEY"
+          } > src-tauri/.garow-build.env
+          npx tauri ios build --ci --target aarch64 --no-sign
+
+      - name: Collect unsigned IPA
+        shell: bash
+        run: |
+          set -euo pipefail
+          IPA_PATH=$(find src-tauri -type f -name "*.ipa" -print -quit)
+          test -n "$IPA_PATH"
+          VERIFY_DIR=$(mktemp -d)
+          trap 'rm -rf "$VERIFY_DIR"' EXIT
+          unzip -q "$IPA_PATH" -d "$VERIFY_DIR"
+          PLIST_PATH=$(find "$VERIFY_DIR/Payload" -path "*.app/Info.plist" -print -quit)
+          test -n "$PLIST_PATH"
+          test -n "$(plutil -extract NSBluetoothAlwaysUsageDescription raw -o - "$PLIST_PATH")"
+          VERSION=${{ needs.create-release.outputs.release_tag }}
+          cp "$IPA_PATH" "RideX-${VERSION}-unsigned.ipa"
+          test -s "RideX-${VERSION}-unsigned.ipa"
+          ls -lh "RideX-${VERSION}-unsigned.ipa"
+
+      - name: Upload IPA to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          VERSION=${{ needs.create-release.outputs.release_tag }}
+          gh release upload ${{ needs.create-release.outputs.release_tag }} "RideX-${VERSION}-unsigned.ipa" --clobber
+
+      - name: Preserve built IPA
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: RideX-ios
+          path: RideX-*.ipa
+          if-no-files-found: ignore
+          compression-level: 0
+          overwrite: true
+
+  publish-release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    needs: [create-release, build-tauri, build-android, build-ios]
+    if: >-
+      ${{ always() &&
+          needs.create-release.result == 'success' &&
+          needs.build-tauri.result == 'success' &&
+          needs.build-android.result == 'success' &&
+          (needs.build-ios.result == 'success' || needs.build-ios.result == 'skipped') }}
+
+    steps:
+      - name: publish release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release edit ${{ needs.create-release.outputs.release_tag }} --draft=false

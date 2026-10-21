@@ -1,0 +1,28 @@
+{
+  "name": "ridex",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "type-check": "vue-tsc --noEmit",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-dialog": "^2.7.1",
+    "@tauri-apps/plugin-os": "^2.3.2",
+    "pinia": "^4.0.2",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "@types/node": "^24.3.0",
+    "@vitejs/plugin-vue": "^6.0.7",
+    "typescript": "^5.9.2",
+    "vite": "^8.0.16",
+    "vue-tsc": "^3.0.6"
+  }
+}
