@@ -314,6 +314,21 @@ fn ota_result(rx_frame: &[u8], function: u8) -> FrameResult<()> {
     }
 }
 
+/// 排除其他设备、其他操作和 OTA 旧包的迟到回复；当前请求的错误回复仍须校验。
+pub fn matches_response(request: &[u8], response: &[u8]) -> bool {
+    if request.len() < 2 || response.len() < 2 || request[0] != response[0] {
+        return false;
+    }
+    let function = request[1];
+    if response[1] != function {
+        return is_exception(response[1]) && response[1] & 0x7F == function;
+    }
+    function != OTA_DATA
+        || request
+            .get(2..4)
+            .is_some_and(|sequence| response.get(2..4) == Some(sequence))
+}
+
 /// 根据请求帧校验一条完整响应，并返回业务数据。
 ///
 /// 读操作返回响应中的数据区；写操作和 OTA 成功响应只是确认帧，因此返回

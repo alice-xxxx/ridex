@@ -94,6 +94,11 @@ export interface LicenseStatus {
   message: string | null
 }
 
+export interface AppUpdate {
+  version: string
+  url: string
+}
+
 export interface OtaFileInfo {
   fileCrc: number
   fileSize: number

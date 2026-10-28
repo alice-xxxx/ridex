@@ -69,7 +69,7 @@ export const useSessionStore = defineStore("session", () => {
 
   function handleDisconnected(error: unknown): boolean {
     if (!isDisconnected(error)) return false
-    reset(transport.value === "ble" ? "蓝牙连接已断开" : "连接已断开")
+    if (link.current) reset(transport.value === "ble" ? "蓝牙连接已断开" : "连接已断开")
     return true
   }
 
@@ -104,10 +104,9 @@ export const useSessionStore = defineStore("session", () => {
   }
 
   async function discover(transportType: DiscoveredEndpoint["transport"]) {
-    if (access.scanning || link.disconnecting) return
+    if (access.scanning || link.connecting || link.disconnecting) return
     access.scanning = true
     access.error = ""
-    link.connectError = ""
     try {
       access.endpoints = await tauriApi.discover(
         transportType === "ble"
@@ -116,7 +115,7 @@ export const useSessionStore = defineStore("session", () => {
       )
     } catch (error) {
       access.error = errorMessage(error)
-      handleDisconnected(error)
+      if (link.current) handleDisconnected(error)
     } finally {
       access.scanning = false
     }
@@ -125,6 +124,7 @@ export const useSessionStore = defineStore("session", () => {
   async function connect(request: ConnectRequest): Promise<boolean> {
     if (link.connecting || link.disconnecting) return false
 
+    const revision = runtime.revision
     link.connecting = true
     if (request.transport === "ble") link.endpoint = request.address
     else if (request.transport === "serial") link.endpoint = request.path
@@ -137,44 +137,53 @@ export const useSessionStore = defineStore("session", () => {
 
     try {
       if (!(await connectionEventsReady)) throw new Error("连接事件监听未就绪")
-      link.current = await tauriApi.connect(request)
+      const connection = await tauriApi.connect(request)
+      if (revision !== runtime.revision) return false
+      link.current = connection
       view.active = "status"
       return true
     } catch (error) {
+      if (revision !== runtime.revision) return false
       link.connectError = errorMessage(error)
       link.current = null
       return false
     } finally {
-      link.connecting = false
-      link.endpoint = ""
+      if (revision === runtime.revision) {
+        link.connecting = false
+        link.endpoint = ""
+      }
     }
   }
 
   async function authenticate(code = authorization.vehicleCode): Promise<boolean> {
     if (authorization.active || !link.current) return false
+    const revision = runtime.revision
     authorization.active = true
     authorization.error = ""
     link.connectError = ""
     try {
       await tauriApi.authenticate(code)
+      if (revision !== runtime.revision || !link.current) return false
       link.current.authenticated = true
       view.active = "status"
       return true
     } catch (error) {
+      if (revision !== runtime.revision) return false
       authorization.error = errorMessage(error)
       handleDisconnected(error)
       return false
     } finally {
-      authorization.active = false
+      if (revision === runtime.revision) authorization.active = false
     }
   }
 
   async function disconnect() {
     if (!link.current || link.disconnecting) return
     link.disconnecting = true
-    reset()
+    link.connectError = ""
     try {
       await tauriApi.disconnect()
+      reset()
     } catch (error) {
       link.connectError = errorMessage(error)
     } finally {

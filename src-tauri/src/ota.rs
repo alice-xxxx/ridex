@@ -1,13 +1,6 @@
-use crate::{channel::AnyChannel, modbus};
+use crate::{ble::OTA_ENCRYPTED_PACKET_SIZE, channel::AnyChannel, modbus};
 
-use std::{
-    io::Write,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
-    time::Duration,
-};
+use std::{io::Write, time::Duration};
 
 use crc::{Crc, CRC_32_ISO_HDLC};
 use serde::{Deserialize, Serialize};
@@ -242,9 +235,25 @@ impl AnyChannel {
         let firmware_crc = OTA_CRC32.checksum(firmware);
         let packets = firmware.len().div_ceil(OTA_PACKET_SIZE);
         let total_packets = packets * usize::from(cycles);
+        let mut last_progress = 0;
+        // F1 完整帧为 134 字节，独立 AES 加密后为 144 字节。
+        let payload_size = match self {
+            Self::Ble { channel } => channel
+                .payload_size()
+                .await
+                .map_err(|error| error.to_string())?,
+            _ => 0,
+        };
+        let packets_per_batch = if payload_size == 0 {
+            1
+        } else {
+            (payload_size / OTA_ENCRYPTED_PACKET_SIZE).max(3)
+        };
+        tauri_plugin_log::log::info!(
+            "OTA 每批 {packets_per_batch} 包，BLE 写入载荷 {payload_size} 字节"
+        );
 
         for cycle in 0..cycles {
-            self.ensure_ota_running()?;
             self.ota_modbus_tx(
                 &modbus::Protocol::OtaHandshake {
                     device,
@@ -259,32 +268,49 @@ impl AnyChannel {
             )
             .await?;
 
-            for (index, packet) in firmware.chunks(OTA_PACKET_SIZE).enumerate() {
-                self.ensure_ota_running()?;
-                self.ota_modbus_tx(
-                    &modbus::Protocol::OtaData {
+            for (batch_index, batch) in firmware
+                .chunks(OTA_PACKET_SIZE * packets_per_batch)
+                .enumerate()
+            {
+                let first_packet = batch_index * packets_per_batch;
+                let requests: Vec<_> = batch
+                    .chunks(OTA_PACKET_SIZE)
+                    .enumerate()
+                    .map(|(offset, packet)| modbus::Protocol::OtaData {
                         device,
-                        sequence: index as u16,
+                        sequence: (first_packet + offset) as u16,
                         data: packet.to_vec(),
-                    },
-                    5_000,
-                    &format!(
-                        "OTA 数据包（第 {}/{} 次，第 {}/{} 包）",
-                        cycle + 1,
-                        cycles,
-                        index + 1,
-                        packets,
-                    ),
-                )
-                .await?;
-                let completed_packets = usize::from(cycle) * packets + index + 1;
-                let _ = app.emit(
-                    "ota-progress",
-                    (completed_packets * 100 / total_packets) as u8,
+                    })
+                    .collect();
+                let stage = format!(
+                    "OTA 数据包（第 {}/{} 次，第 {}-{}/{} 包）",
+                    cycle + 1,
+                    cycles,
+                    first_packet + 1,
+                    first_packet + requests.len(),
+                    packets,
                 );
+                if let Self::Ble { channel } = self {
+                    ota_ble_batch(channel, &requests, payload_size, &stage).await?;
+                } else {
+                    self.ota_modbus_tx(&requests[0], 5_000, &stage).await?;
+                }
+                let completed_packets =
+                    usize::from(cycle) * packets + first_packet + requests.len();
+                if completed_packets * 10 / total_packets
+                    > (usize::from(cycle) * packets + first_packet) * 10 / total_packets
+                {
+                    crate::ota_notifications::progress(
+                        (completed_packets * 100 / total_packets) as u8,
+                    );
+                }
+                let progress = (completed_packets * 100 / total_packets) as u8;
+                if progress != last_progress {
+                    last_progress = progress;
+                    let _ = app.emit("ota-progress", progress);
+                }
             }
 
-            self.ensure_ota_running()?;
             self.ota_modbus_tx(
                 &modbus::Protocol::OtaResult { device },
                 5_000,
@@ -294,37 +320,10 @@ impl AnyChannel {
 
             if cycle + 1 < cycles {
                 sleep(Duration::from_secs(2)).await;
-            } else {
-                let _ = app.emit("ota-progress", 100);
             }
         }
 
         Ok(())
-    }
-
-    /// 返回 OTA 停止标志的共享句柄。命令层在 OTA 持有通道锁时也需要能够取消。
-    pub fn ota_stop_handle(&self) -> Arc<AtomicBool> {
-        match self {
-            Self::Ble { ota_stop, .. } => Arc::clone(ota_stop),
-            Self::Serial { ota_stop, .. } => Arc::clone(ota_stop),
-            Self::Network { ota_stop, .. } => Arc::clone(ota_stop),
-        }
-    }
-
-    fn ota_stop_flag(&self) -> &AtomicBool {
-        match self {
-            Self::Ble { ota_stop, .. } => ota_stop.as_ref(),
-            Self::Serial { ota_stop, .. } => ota_stop.as_ref(),
-            Self::Network { ota_stop, .. } => ota_stop.as_ref(),
-        }
-    }
-
-    fn ensure_ota_running(&self) -> Result<(), String> {
-        if self.ota_stop_flag().swap(false, Ordering::AcqRel) {
-            Err("OTA 已停止".to_string())
-        } else {
-            Ok(())
-        }
     }
 
     /// OTA 失败时保留本次实际组装的完整请求帧，便于前端定位失败阶段和协议内容。
@@ -351,6 +350,41 @@ impl AnyChannel {
                         format_frame_bytes(&request_frame),
                     ));
                 }
+            }
+        }
+    }
+}
+
+async fn ota_ble_batch(
+    channel: &crate::ble::BleChannel,
+    requests: &[modbus::Protocol],
+    payload_size: usize,
+    stage: &str,
+) -> Result<(), String> {
+    let mut confirmed = 0;
+    let mut attempts = 0;
+    loop {
+        attempts += 1;
+        let before = confirmed;
+        match channel
+            .ota_data_batch(&requests[confirmed..], payload_size, 5_000, &mut confirmed)
+            .await
+        {
+            Ok(()) => return Ok(()),
+            Err(error) => {
+                // 当前面的包已确认，为首个未确认包重新计算重试预算。
+                if confirmed > before {
+                    attempts = 1;
+                }
+                if is_timeout_error(&error.to_string()) && attempts < OTA_TIMEOUT_RETRIES {
+                    continue;
+                }
+                let frame = modbus::assembly_frame(requests[confirmed].clone())
+                    .map_err(|error| error.to_string())?;
+                return Err(format!(
+                    "{stage}失败（本批已确认 {confirmed}/{} 包，当前包已尝试 {attempts} 次）：{error}；发送帧：{}",
+                    requests.len(), format_frame_bytes(&frame),
+                ));
             }
         }
     }

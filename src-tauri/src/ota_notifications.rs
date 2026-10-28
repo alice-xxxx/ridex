@@ -1,0 +1,130 @@
+use std::sync::{mpsc, OnceLock};
+
+use tauri::AppHandle;
+use tauri_plugin_notification::{NotificationExt, PermissionState};
+
+enum Event {
+    Permission(tokio::sync::oneshot::Sender<()>),
+    Start,
+    Focused(bool),
+    Progress(u8),
+    Finish(Result<(), String>),
+}
+
+static EVENTS: OnceLock<mpsc::Sender<Event>> = OnceLock::new();
+
+// Mobile notification calls wait for the main thread. Keep them off the UI and OTA threads,
+// and process them in order so an old progress update cannot overwrite the result.
+pub fn init(app: AppHandle) -> std::io::Result<()> {
+    let (sender, receiver) = mpsc::channel();
+    std::thread::Builder::new()
+        .name("ota-notifications".into())
+        .spawn(move || {
+            let mut allowed = false;
+            let mut background = false;
+            let mut progress = None;
+            for event in receiver {
+                match event {
+                    Event::Permission(reply) => {
+                        allowed = matches!(
+                            app.notification().request_permission(),
+                            Ok(PermissionState::Granted)
+                        );
+                        let _ = reply.send(());
+                        continue;
+                    }
+                    Event::Start => progress = Some(0),
+                    Event::Focused(focused) => {
+                        background = !focused;
+                        // Android's notification also belongs to the foreground service.
+                        #[cfg(target_os = "ios")]
+                        if focused && allowed {
+                            let _ = app.notification().remove_active(vec![1]);
+                        }
+                    }
+                    Event::Progress(value) => progress = Some(value),
+                    Event::Finish(result) => {
+                        progress = None;
+                        if allowed {
+                            #[cfg(any(target_os = "android", target_os = "ios"))]
+                            let _ = app.notification().remove_active(vec![1]);
+                            if background {
+                                let (title, body): (&str, String) = match result {
+                                    Ok(()) => (
+                                        "OTA 升级完成",
+                                        "固件已更新，请回到软件查看设备状态".into(),
+                                    ),
+                                    Err(error) if error == "OTA 已停止" => {
+                                        ("OTA 已终止", "固件传输已停止".into())
+                                    }
+                                    Err(error) => {
+                                        ("OTA 升级失败", error.chars().take(160).collect())
+                                    }
+                                };
+                                let result = app
+                                    .notification()
+                                    .builder()
+                                    .id(2)
+                                    .title(title)
+                                    .body(body)
+                                    .auto_cancel()
+                                    .show();
+                                if let Err(error) = result {
+                                    tauri_plugin_log::log::warn!("发送 OTA 结果通知失败：{error}");
+                                }
+                            }
+                        }
+                        continue;
+                    }
+                }
+                if let Some(value) = progress.filter(|_| allowed && background) {
+                    let notification = app
+                        .notification()
+                        .builder()
+                        .id(1)
+                        .title("OTA 正在升级")
+                        .body(if value == 100 {
+                            "已传输 100%，等待设备确认".into()
+                        } else {
+                            format!("已传输 {value}%，请保持设备连接")
+                        })
+                        .ongoing();
+                    #[cfg(target_os = "android")]
+                    let notification = notification.channel_id("ota");
+                    if let Err(error) = notification.show() {
+                        tauri_plugin_log::log::warn!("发送 OTA 进度通知失败：{error}");
+                    }
+                }
+            }
+        })?;
+    let _ = EVENTS.set(sender);
+    Ok(())
+}
+
+fn send(event: Event) {
+    if let Some(sender) = EVENTS.get() {
+        let _ = sender.send(event);
+    }
+}
+
+pub async fn request_permission() {
+    let (sender, receiver) = tokio::sync::oneshot::channel();
+    send(Event::Permission(sender));
+    let _ = receiver.await;
+}
+
+pub fn start() {
+    send(Event::Start);
+}
+
+pub fn focused(focused: bool) {
+    send(Event::Focused(focused));
+}
+
+pub fn progress(value: u8) {
+    send(Event::Progress(value));
+}
+
+pub fn finish(result: Result<(), String>) {
+    send(Event::Finish(result));
+}

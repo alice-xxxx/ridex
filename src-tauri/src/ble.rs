@@ -7,16 +7,7 @@
 
 use crate::modbus;
 
-use std::{
-    collections::HashMap,
-    fmt,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
-    thread::{self, JoinHandle},
-    time::Duration,
-};
+use std::{collections::HashMap, fmt, sync::Arc, time::Duration};
 
 use aes::cipher::{Block, BlockModeDecrypt, BlockModeEncrypt, KeyInit};
 use aes::Aes128;
@@ -27,11 +18,11 @@ use ringbuf::{traits::*, HeapRb};
 use serde::Serialize;
 use tauri_plugin_blec::{
     models::{ScanFilter, WriteType},
-    OnDisconnectHandler,
+    Connection, OnDisconnectHandler,
 };
 use tokio::{
-    sync::{broadcast, mpsc},
-    time::{timeout, Instant},
+    sync::{broadcast, mpsc, watch, Notify},
+    time::{timeout, timeout_at, Instant},
 };
 use uuid::Uuid;
 use zeroize::Zeroizing;
@@ -46,7 +37,9 @@ const AUTH_KEY: [u8; 16] = [
 
 const BYTE_RING_CAPACITY: usize = 8 * 1024;
 const FRAME_RING_CAPACITY: usize = 64;
+pub(crate) const OTA_ENCRYPTED_PACKET_SIZE: usize = (modbus::OTA_PACKET_SIZE + 6).div_ceil(16) * 16;
 const AUTH_RESPONSE_LENGTH: usize = 8;
+const DISCONNECT_TIMEOUT: Duration = Duration::from_secs(12);
 
 /// BLE 扫描结果。
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -62,7 +55,6 @@ pub enum BleError {
     InvalidArgument(&'static str),
     Timeout,
     NotConnected,
-    AddressMismatch,
     Disconnected(String),
     NotAuthenticated,
     AuthenticationRequired(&'static str),
@@ -75,8 +67,7 @@ impl fmt::Display for BleError {
         match self {
             Self::InvalidArgument(message) => write!(formatter, "参数无效：{message}"),
             Self::Timeout => write!(formatter, "操作超时"),
-            Self::NotConnected => write!(formatter, "BLE 尚未连接"),
-            Self::AddressMismatch => write!(formatter, "设备地址与当前连接不一致"),
+            Self::NotConnected => write!(formatter, "BLE 已断开"),
             Self::Disconnected(message) => write!(formatter, "BLE 已断开：{message}"),
             Self::NotAuthenticated => write!(formatter, "BLE 尚未认证"),
             Self::AuthenticationRequired(message) => write!(formatter, "{message}"),
@@ -97,17 +88,17 @@ impl From<modbus::FrameError> for BleError {
 /// 独立 BLE 会话。
 ///
 /// 这里直接调用 tauri_plugin_blec，不通过现有 Channel、Global 或前端状态。
-/// 认证成功后才启动通知解析线程；断开时停止线程并释放线程资源。
+/// 认证成功后才启动通知解析任务；断开时停止任务。
 pub struct BleChannel {
-    address: String,
+    connection: Connection,
     name: String,
     notifications: broadcast::Sender<Vec<u8>>,
-    connected: Arc<AtomicBool>,
+    connected: watch::Receiver<bool>,
     key: Option<Zeroizing<[u8; 16]>>,
 
-    parser_stop: Arc<AtomicBool>,
-    parser_task: Option<JoinHandle<()>>,
+    parser_task: Option<tauri::async_runtime::JoinHandle<()>>,
     last_decrypted: Arc<ArrayQueue<Vec<u8>>>,
+    frame_ready: Arc<Notify>,
 
     // 每个槽位是一条完整帧，固定容量，满时覆盖最旧完整帧，不使用互斥锁。
     frame_ring: Arc<ArrayQueue<Vec<u8>>>,
@@ -204,72 +195,66 @@ impl BleChannel {
             return Err(BleError::InvalidArgument("连接超时时间必须大于零"));
         }
 
-        let connected = Arc::new(AtomicBool::new(true));
-        let disconnected = Arc::clone(&connected);
-        let on_disconnect = OnDisconnectHandler::from_async(move || {
-            disconnected.store(false, Ordering::Release);
-            async {}
+        let (connection_state, connected) = watch::channel(true);
+        let on_disconnect = OnDisconnectHandler::from_sync(move || {
+            connection_state.send_replace(false);
         });
 
-        match timeout(
-            Duration::from_millis(timeout_ms),
-            handler()?.connect(&address, on_disconnect, false),
-        )
-        .await
-        {
-            Ok(Ok(())) => {}
-            Ok(Err(error)) => return Err(plugin_error(error)),
-            Err(_) => return Err(BleError::Timeout),
-        }
+        let ble = handler()?;
+        let mut timeouts = ble.timeouts();
+        timeouts.connect = Duration::from_millis(timeout_ms);
+        ble.set_timeouts(timeouts);
+        let result = async {
+            let connection = ble
+                .connect(&address, on_disconnect, false)
+                .await
+                .map_err(plugin_error)?;
 
-        let (notifications, _) = broadcast::channel(64);
-        let notify = notifications.clone();
-        if let Err(error) = handler()?
-            .subscribe(NOTIFY_UUID, Some(SERVICE_UUID), move |bytes| {
-                let _ = notify.send(bytes);
+            let (notifications, _) = broadcast::channel(64);
+            let notify = notifications.clone();
+            connection
+                .subscribe(NOTIFY_UUID, Some(SERVICE_UUID), move |bytes| {
+                    let _ = notify.send(bytes);
+                })
+                .await
+                .map_err(plugin_error)?;
+
+            let name = name.into();
+            let name = if name.trim().is_empty() {
+                address.clone()
+            } else {
+                name
+            };
+            Ok(Self {
+                connection,
+                name,
+                notifications,
+                connected,
+                key: None,
+                parser_task: None,
+                last_decrypted: Arc::new(ArrayQueue::new(1)),
+                frame_ready: Arc::new(Notify::new()),
+                frame_ring: Arc::new(ArrayQueue::new(FRAME_RING_CAPACITY)),
             })
-            .await
-        {
-            let _ = handler()?.disconnect().await;
-            return Err(plugin_error(error));
         }
-
-        let name = name.into();
-        let name = if name.trim().is_empty() {
-            address.clone()
-        } else {
-            name
-        };
-        Ok(Self {
-            address,
-            name,
-            notifications,
-            connected,
-            key: None,
-            parser_stop: Arc::new(AtomicBool::new(false)),
-            parser_task: None,
-            last_decrypted: Arc::new(ArrayQueue::new(1)),
-            frame_ring: Arc::new(ArrayQueue::new(FRAME_RING_CAPACITY)),
-        })
+        .await;
+        match result {
+            Ok(channel) => Ok(channel),
+            Err(error) => {
+                disconnect_device(&address).await.map_err(|cleanup_error| {
+                    BleError::Transport(format!("{error}；清理连接失败：{cleanup_error}"))
+                })?;
+                Err(error)
+            }
+        }
     }
 
     /// 断开当前设备并清理认证状态、解析任务和全部缓冲区。
-    pub async fn disconnect(&mut self, address: &str) -> Result<(), BleError> {
-        if self.address != address {
-            return Err(BleError::AddressMismatch);
-        }
-
-        self.connected.store(false, Ordering::Release);
+    pub async fn disconnect(&mut self) -> Result<(), BleError> {
+        disconnect_device(self.connection.address()).await?;
         self.stop_notification_task();
         self.key = None;
-
-        let result = match timeout(Duration::from_secs(6), handler()?.disconnect()).await {
-            Ok(Ok(())) | Ok(Err(tauri_plugin_blec::Error::NoDeviceConnected)) => Ok(()),
-            Ok(Err(error)) => Err(plugin_error(error)),
-            Err(_) => Err(BleError::Timeout),
-        };
-
-        result
+        Ok(())
     }
 
     /// 使用车辆编号和 BLE 名称组装认证包，等待并校验 8 字节认证响应。
@@ -289,17 +274,22 @@ impl BleChannel {
 
         let mut receiver = self.notifications.subscribe();
         let (request, session_key) = auth_request(vehicle_code, &self.name);
-        handler()?
-            .send_data(
-                WRITE_UUID,
-                Some(SERVICE_UUID),
-                &request,
-                WriteType::WithoutResponse,
-            )
-            .await
-            .map_err(plugin_error)?;
-
-        let response = receive_auth_response(&mut receiver, &session_key, timeout_ms).await?;
+        let response = tokio::select! {
+            biased;
+            _ = self.wait_disconnected() => return Err(BleError::NotConnected),
+            result = async {
+                self.connection
+                    .send_data(
+                        WRITE_UUID,
+                        Some(SERVICE_UUID),
+                        &request,
+                        WriteType::WithoutResponse,
+                    )
+                    .await
+                    .map_err(plugin_error)?;
+                receive_auth_response(&mut receiver, &session_key, timeout_ms).await
+            } => result?,
+        };
         check_auth_result(&response)?;
 
         self.key = Some(Zeroizing::new(session_key));
@@ -322,8 +312,11 @@ impl BleChannel {
         if timeout_ms == 0 {
             return Err(BleError::InvalidArgument("Modbus 超时时间必须大于零"));
         }
-        let result = self.modbus_tx_inner(request, &key, timeout_ms).await;
-        result
+        tokio::select! {
+            biased;
+            _ = self.wait_disconnected() => Err(BleError::NotConnected),
+            result = self.modbus_tx_inner(request, &key, timeout_ms) => result,
+        }
     }
 
     async fn modbus_tx_inner(
@@ -339,42 +332,135 @@ impl BleChannel {
         // 防止本次请求消费发送前已经留在帧队列中的旧响应。
         while self.last_decrypted.pop().is_some() {}
         while self.frame_ring.pop().is_some() {}
-        handler()?
-            .send_data(
-                WRITE_UUID,
-                Some(SERVICE_UUID),
-                &encrypted,
-                WriteType::WithoutResponse,
-            )
+        let payload_size = self.payload_size().await?;
+        for bytes in encrypted.chunks(payload_size) {
+            self.connection
+                .send_data(
+                    WRITE_UUID,
+                    Some(SERVICE_UUID),
+                    bytes,
+                    WriteType::WithoutResponse,
+                )
+                .await
+                .map_err(plugin_error)?;
+        }
+
+        self.receive_modbus_response(&request_frame, timeout_ms)
             .await
-            .map_err(plugin_error)?;
+    }
 
-        let deadline = Instant::now() + Duration::from_millis(timeout_ms);
-        let Some(response) = self.pop_frame_until(deadline).await? else {
-            return match self.last_decrypted.pop() {
-                Some(data) => Err(BleError::Protocol(format!(
-                    "Modbus 解析器校验数据异常，收到的数据为：{}",
-                    format_bytes(&data),
-                ))),
-                None => Err(BleError::Timeout),
-            };
+    pub async fn payload_size(&self) -> Result<usize, BleError> {
+        let mtu = self.connection.mtu().await.map_err(plugin_error)?;
+        usize::from(mtu)
+            .checked_sub(3)
+            .filter(|size| *size > 0)
+            .ok_or(BleError::Protocol("BLE MTU 无效".into()))
+    }
+
+    /// 独立加密每条帧，按原顺序拼接写入；只累计已经收到成功确认的帧。
+    pub async fn ota_data_batch(
+        &self,
+        requests: &[modbus::Protocol],
+        payload_size: usize,
+        timeout_ms: u64,
+        confirmed: &mut usize,
+    ) -> Result<(), BleError> {
+        self.ensure_connected()?;
+        if requests.is_empty()
+            || payload_size == 0
+            || timeout_ms == 0
+            || requests.len() > (payload_size / OTA_ENCRYPTED_PACKET_SIZE).max(3)
+            || !requests
+                .iter()
+                .all(|request| matches!(request, modbus::Protocol::OtaData { .. }))
+        {
+            return Err(BleError::InvalidArgument("BLE 批量传输参数无效"));
+        }
+        let key = self.key.as_ref().ok_or(BleError::NotAuthenticated)?;
+        let frames = requests
+            .iter()
+            .cloned()
+            .map(modbus::assembly_frame)
+            .collect::<Result<Vec<_>, _>>()?;
+        let mut encrypted = Vec::new();
+        for frame in &frames {
+            encrypted.extend(encrypt(frame, key));
+        }
+        // 能容纳整帧时保留 AES 帧边界；小 MTU 则按协商载荷顺序分片。
+        let write_size = if payload_size >= OTA_ENCRYPTED_PACKET_SIZE {
+            payload_size / OTA_ENCRYPTED_PACKET_SIZE * OTA_ENCRYPTED_PACKET_SIZE
+        } else {
+            payload_size
         };
+        while self.last_decrypted.pop().is_some() {}
+        while self.frame_ring.pop().is_some() {}
+        tokio::select! {
+            biased;
+            _ = self.wait_disconnected() => Err(BleError::NotConnected),
+            result = async {
+                // MTU 较小时也按顺序分片，不向系统提交超过协商载荷的写入。
+                for bytes in encrypted.chunks(write_size) {
+                    self.connection.send_data(
+                        WRITE_UUID, Some(SERVICE_UUID), bytes, WriteType::WithoutResponse,
+                    ).await.map_err(plugin_error)?;
+                }
+                for frame in &frames {
+                    self.receive_modbus_response(frame, timeout_ms).await?;
+                    *confirmed += 1;
+                }
+                Ok(())
+            } => result,
+        }
+    }
 
-        // buffer_get_frame 已经完成帧边界捕获；这里只做一次 Modbus 业务校验。
-        let data = modbus::check_frame(&request_frame, &response)?;
-        Ok(modbus::TransactionResult {
-            request: request_frame,
-            response,
-            data,
-        })
+    async fn receive_modbus_response(
+        &self,
+        request_frame: &[u8],
+        timeout_ms: u64,
+    ) -> Result<modbus::TransactionResult, BleError> {
+        let deadline = Instant::now() + Duration::from_millis(timeout_ms);
+        loop {
+            let Some(response) = self.pop_frame_until(deadline).await else {
+                return match self.last_decrypted.pop() {
+                    Some(data) => Err(BleError::Protocol(format!(
+                        "等待 Modbus 响应超时，解析器收到的数据为：{}",
+                        format_bytes(&data),
+                    ))),
+                    None => Err(BleError::Timeout),
+                };
+            };
+            // 已解析成完整帧的数据不应被下一包误报为解析异常。
+            let _ = self.last_decrypted.pop();
+            if !modbus::matches_response(request_frame, &response) {
+                continue;
+            }
+            let data = modbus::check_frame(request_frame, &response)?;
+            return Ok(modbus::TransactionResult {
+                request: request_frame.to_vec(),
+                response,
+                data,
+            });
+        }
     }
 
     fn ensure_connected(&self) -> Result<(), BleError> {
-        if self.connected.load(Ordering::Acquire) {
+        if *self.connected.borrow() {
             Ok(())
         } else {
             Err(BleError::NotConnected)
         }
+    }
+
+    pub fn connection_state(&self) -> watch::Receiver<bool> {
+        self.connected.clone()
+    }
+
+    pub async fn wait_disconnected(&self) {
+        let _ = self
+            .connected
+            .clone()
+            .wait_for(|connected| !*connected)
+            .await;
     }
 
     fn start_notification_task(&mut self) -> Result<(), BleError> {
@@ -384,23 +470,26 @@ impl BleChannel {
             .map(|value| **value)
             .ok_or(BleError::NotAuthenticated)?;
 
-        self.parser_stop.store(false, Ordering::Release);
         let receiver = self.notifications.subscribe();
-        let stop = Arc::clone(&self.parser_stop);
-        let connected = Arc::clone(&self.connected);
+        let connected = self.connected.clone();
         let last_decrypted = Arc::clone(&self.last_decrypted);
         let frame_ring = Arc::clone(&self.frame_ring);
+        let frame_ready = Arc::clone(&self.frame_ready);
 
-        self.parser_task = Some(thread::spawn(move || {
-            notification_task(receiver, key, stop, connected, last_decrypted, frame_ring);
-        }));
+        self.parser_task = Some(tauri::async_runtime::spawn(notification_task(
+            receiver,
+            key,
+            connected,
+            last_decrypted,
+            frame_ring,
+            frame_ready,
+        )));
         Ok(())
     }
 
     fn stop_notification_task(&mut self) {
-        self.parser_stop.store(true, Ordering::Release);
         if let Some(task) = self.parser_task.take() {
-            let _ = task.join();
+            task.abort();
         }
     }
 
@@ -408,69 +497,60 @@ impl BleChannel {
         self.frame_ring = Arc::new(ArrayQueue::new(FRAME_RING_CAPACITY));
     }
 
-    /// 从完整帧环形队列取一条帧，直到取得帧或等待超时。
-    async fn pop_frame_until(&self, deadline: Instant) -> Result<Option<Vec<u8>>, BleError> {
+    /// 完整帧到达时唤醒，无需定时轮询。
+    async fn pop_frame_until(&self, deadline: Instant) -> Option<Vec<u8>> {
         loop {
-            let Some(remaining) = deadline.checked_duration_since(Instant::now()) else {
-                return Ok(None);
-            };
-
-            if let Some(frame) = self.frame_ring.pop() {
-                return Ok(Some(frame));
+            if Instant::now() >= deadline {
+                return None;
             }
-
-            let poll_interval = Duration::from_millis(10);
-            let sleep_duration = if remaining < poll_interval {
-                remaining
-            } else {
-                poll_interval
-            };
-            tokio::time::sleep(sleep_duration).await;
+            if let Some(frame) = self.frame_ring.pop() {
+                return Some(frame);
+            }
+            if timeout_at(deadline, self.frame_ready.notified())
+                .await
+                .is_err()
+            {
+                return None;
+            }
         }
     }
 }
 
-/// 通知解析线程。
-///
-/// 注意顺序：
-///
-/// 1. 从 BLE 通知通道轮询取得一片密文；
-/// 2. 直接解密当前通知数据并移除 AES 填充；
-/// 3. 把解密字节追加到字节环形缓冲；
-/// 4. 调用一次 modbus.rs 的 buffer_get_frame；
-/// 5. 如果捕获到完整帧，就放入固定容量的无锁覆盖队列；
-/// 6. 本轮处理完成后短暂休眠，再执行下一轮。
-fn notification_task(
+/// 收到通知即解密，取出当前全部完整帧并唤醒等待方。
+async fn notification_task(
     mut receiver: broadcast::Receiver<Vec<u8>>,
     key: [u8; 16],
-    stop: Arc<AtomicBool>,
-    connected: Arc<AtomicBool>,
+    mut connected: watch::Receiver<bool>,
     last_decrypted: Arc<ArrayQueue<Vec<u8>>>,
     frame_ring: Arc<ArrayQueue<Vec<u8>>>,
+    frame_ready: Arc<Notify>,
 ) {
-    // 字节环形只由当前通知线程访问，整个接收过程按顺序执行。
+    // 字节环形只由当前任务访问，整个接收过程按顺序执行。
     let mut byte_ring = HeapRb::<u8>::new(BYTE_RING_CAPACITY);
 
-    while !stop.load(Ordering::Acquire) && connected.load(Ordering::Acquire) {
-        let data = match receiver.try_recv() {
+    while *connected.borrow() {
+        let received = tokio::select! {
+            biased;
+            _ = connected.changed() => break,
+            received = receiver.recv() => received,
+        };
+        let data = match received {
             Ok(data) => data,
-            Err(broadcast::error::TryRecvError::Empty) => {
-                thread::sleep(Duration::from_millis(10));
+            Err(broadcast::error::RecvError::Lagged(count)) => {
+                byte_ring.clear();
+                tauri_plugin_log::log::warn!("BLE 通知积压，丢失 {count} 个数据片段");
                 continue;
             }
-            Err(broadcast::error::TryRecvError::Lagged(_))
-            | Err(broadcast::error::TryRecvError::Closed) => break,
+            Err(broadcast::error::RecvError::Closed) => break,
         };
 
         if data.is_empty() {
-            thread::sleep(Duration::from_millis(10));
             continue;
         }
 
         let decrypted = match decrypt(&data, &key) {
             Ok(decrypted) => decrypted,
             Err(_) => {
-                thread::sleep(Duration::from_millis(10));
                 continue;
             }
         };
@@ -481,12 +561,11 @@ fn notification_task(
         byte_ring.push_slice_overwrite(&decrypted);
 
         // 直接把字节环形交给协议模块；帧捕获和未消费字节的保留由协议模块负责。
-        if let Some(frame) = modbus::buffer_get_frame(&mut byte_ring) {
+        while let Some(frame) = modbus::buffer_get_frame(&mut byte_ring) {
             // 完整帧环形只保存帧对象；满时覆盖最旧帧。
             let _ = frame_ring.force_push(frame);
+            frame_ready.notify_one();
         }
-
-        thread::sleep(Duration::from_millis(10));
     }
 }
 
@@ -650,11 +729,39 @@ fn strip_aes_padding(mut data: Vec<u8>) -> Vec<u8> {
     data
 }
 
+async fn disconnect_device(address: &str) -> Result<(), BleError> {
+    match timeout(DISCONNECT_TIMEOUT, handler()?.disconnect_device(address)).await {
+        Ok(Ok(()))
+        | Ok(Err(tauri_plugin_blec::Error::NoDeviceConnected))
+        | Ok(Err(tauri_plugin_blec::Error::DeviceNotConnected(_))) => Ok(()),
+        Ok(Err(error)) => Err(plugin_error(error)),
+        Err(_) => Err(BleError::Timeout),
+    }
+}
+
+pub async fn disconnect_all() -> Result<(), BleError> {
+    timeout(DISCONNECT_TIMEOUT, handler()?.disconnect_all())
+        .await
+        .map_err(|_| BleError::Timeout)?
+        .map_err(plugin_error)
+}
+
 fn handler() -> Result<&'static tauri_plugin_blec::Handler, BleError> {
     tauri_plugin_blec::get_handler()
         .map_err(|_| BleError::Disconnected("请先确保蓝牙功能开启".to_string()))
 }
 
 fn plugin_error(error: tauri_plugin_blec::Error) -> BleError {
-    BleError::Transport(format!("{error:?}"))
+    match error {
+        tauri_plugin_blec::Error::Timeout(operation) => {
+            let stage = match operation.as_str() {
+                "Connect" | "connect event" => "建立连接",
+                "discover services" => "发现服务",
+                "subscribe" => "订阅通知",
+                _ => &operation,
+            };
+            BleError::Transport(format!("{stage}超时"))
+        }
+        error => BleError::Transport(format!("{error:?}")),
+    }
 }

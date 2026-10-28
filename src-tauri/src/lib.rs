@@ -1,3 +1,4 @@
+mod app_update;
 mod ble;
 mod channel;
 mod four_g_ota;
@@ -5,6 +6,8 @@ mod license;
 mod modbus;
 mod network;
 mod ota;
+mod ota_background;
+mod ota_notifications;
 mod serial;
 
 use std::sync::{
@@ -13,15 +16,16 @@ use std::sync::{
 };
 use std::{fs, io::ErrorKind, path::PathBuf};
 
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, Notify};
 
 use channel::{AnyChannel, ConnectRequest, DiscoverRequest, DiscoveredDevice};
 use ota::{OtaFileInfo, OtaPackRequest, OtaStartResult};
 
 static CHANNEL: LazyLock<Mutex<Option<AnyChannel>>> = LazyLock::new(|| Mutex::new(None));
-static OTA_STOP: LazyLock<Mutex<Option<Arc<AtomicBool>>>> = LazyLock::new(|| Mutex::new(None));
+static OTA_STOP: LazyLock<Mutex<Option<Arc<Notify>>>> = LazyLock::new(|| Mutex::new(None));
+static EXITING: AtomicBool = AtomicBool::new(false);
 
 #[derive(Default)]
 struct LicenseState(OnceLock<license::License>);
@@ -41,8 +45,23 @@ fn license_status(status: State<'_, LicenseState>) -> Option<license::License> {
 }
 
 #[tauri::command]
-fn exit_app(app: AppHandle) {
+async fn exit_app(app: AppHandle) -> Result<(), String> {
+    if EXITING.swap(true, Ordering::AcqRel) {
+        return Ok(());
+    }
+    let result = async {
+        disconnect_active_channel().await?;
+        ble::disconnect_all()
+            .await
+            .map_err(|error| error.to_string())
+    }
+    .await;
+    if let Err(error) = result {
+        EXITING.store(false, Ordering::Release);
+        return Err(error);
+    }
     app.exit(0);
+    Ok(())
 }
 
 fn component_catalog_path(app: &AppHandle, file_name: &str) -> Result<PathBuf, String> {
@@ -96,6 +115,12 @@ async fn discover(
     status: State<'_, LicenseState>,
 ) -> Result<Vec<DiscoveredDevice>, String> {
     status.ensure_authorized()?;
+    let state = CHANNEL.lock().await;
+    if state.is_none() && matches!(&request, DiscoverRequest::Ble { .. }) {
+        ble::disconnect_all()
+            .await
+            .map_err(|error| error.to_string())?;
+    }
     AnyChannel::discover(request, &app).await
 }
 
@@ -116,12 +141,37 @@ async fn connect(
     status: State<'_, LicenseState>,
 ) -> Result<(), String> {
     status.ensure_authorized()?;
-    let connected = AnyChannel::connect(request, &app).await?;
     let mut state = CHANNEL.lock().await;
-    if let Some(previous) = state.as_mut() {
-        let _ = previous.disconnect().await;
+    if EXITING.load(Ordering::Acquire) {
+        return Err("应用正在退出".to_string());
     }
-    *state = Some(connected);
+    if let Some(previous) = state.as_mut() {
+        previous.disconnect().await?;
+    }
+    *state = None;
+    if matches!(&request, ConnectRequest::Ble { .. }) {
+        ble::disconnect_all()
+            .await
+            .map_err(|error| error.to_string())?;
+    }
+    *state = Some(AnyChannel::connect(request, &app).await?);
+    if let Some(AnyChannel::Ble { channel }) = state.as_ref() {
+        let mut connected = channel.connection_state();
+        tauri::async_runtime::spawn(async move {
+            let _ = connected.wait_for(|connected| !*connected).await;
+            let mut state = CHANNEL.lock().await;
+            // A callback from an old connection must not clear a replacement connection.
+            if let Some(AnyChannel::Ble { channel }) = state.as_ref() {
+                if channel.connection_state().same_channel(&connected) {
+                    *state = None;
+                    let _ = app.emit(
+                        "connection-closed",
+                        serde_json::json!({ "transport": "ble", "reason": "蓝牙连接已断开" }),
+                    );
+                }
+            }
+        });
+    }
     Ok(())
 }
 
@@ -132,6 +182,9 @@ async fn disconnect(status: State<'_, LicenseState>) -> Result<(), String> {
 }
 
 async fn disconnect_active_channel() -> Result<(), String> {
+    if let Some(stop) = OTA_STOP.lock().await.as_ref() {
+        stop.notify_one();
+    }
     let mut state = CHANNEL.lock().await;
     if let Some(active) = state.as_mut() {
         active.disconnect().await?;
@@ -208,49 +261,71 @@ async fn ota_start(
 ) -> Result<OtaStartResult, String> {
     status.ensure_authorized()?;
 
-    let firmware = ota::get_bin(&path, is_ota, &app)?;
-
-    let bytes_per_cycle = firmware.len();
-
-    let stop = CHANNEL
-        .lock()
-        .await
-        .as_ref()
-        .map(|active| active.ota_stop_handle());
-    if let Some(stop) = stop {
-        *OTA_STOP.lock().await = Some(stop);
+    let stop = Arc::new(Notify::new());
+    {
+        let mut running = OTA_STOP.lock().await;
+        if running.is_some() {
+            return Err("已有 OTA 更新正在进行".to_string());
+        }
+        *running = Some(Arc::clone(&stop));
     }
 
-    let result = CHANNEL
-        .lock()
-        .await
-        .as_ref()
-        .ok_or_else(|| "当前没有已连接的通道".to_string())?
-        .ota_start(
-            &app,
-            request.device_address,
-            &firmware,
-            request.manufacturer,
-            request.hardware_version,
-            request.software_version,
-            cycles,
-        )
-        .await;
+    let result = tokio::select! {
+        biased;
+        _ = stop.notified() => Err("OTA 已停止".to_string()),
+        result = async {
+            let state = CHANNEL.lock().await;
+            let channel = state
+                .as_ref()
+                .ok_or_else(|| "当前没有已连接的通道".to_string())?;
+            let disconnected = async {
+                if let AnyChannel::Ble { channel } = channel {
+                    channel.wait_disconnected().await;
+                } else {
+                    std::future::pending::<()>().await;
+                }
+            };
+            tokio::select! {
+                biased;
+                _ = disconnected => Err("BLE 已断开".to_string()),
+                result = async {
+                    ota_notifications::request_permission().await;
+                    ota_background::set_active(true).await?;
+                    ota_notifications::start();
+                    let firmware = ota::get_bin(&path, is_ota, &app)?;
+                    let bytes_per_cycle = firmware.len();
+                    channel
+                        .ota_start(
+                            &app,
+                            request.device_address,
+                            &firmware,
+                            request.manufacturer,
+                            request.hardware_version,
+                            request.software_version,
+                            cycles,
+                        )
+                        .await?;
+                    Ok(OtaStartResult { bytes_per_cycle })
+                } => result,
+            }
+        } => result,
+    };
+    if let Err(error) = ota_background::set_active(false).await {
+        tauri_plugin_log::log::warn!("结束 OTA 后台服务失败：{error}");
+    }
+    ota_notifications::finish(result.as_ref().map(|_| ()).map_err(Clone::clone));
     OTA_STOP.lock().await.take();
 
-    result.map(|()| OtaStartResult { bytes_per_cycle })
+    result
 }
 
 #[tauri::command]
 async fn ota_cancel(status: State<'_, LicenseState>) -> Result<(), String> {
     status.ensure_authorized()?;
 
-    OTA_STOP
-        .lock()
-        .await
-        .as_ref()
-        .ok_or_else(|| "当前没有已连接的通道".to_string())?
-        .store(true, Ordering::Release);
+    if let Some(stop) = OTA_STOP.lock().await.as_ref() {
+        stop.notify_one();
+    }
     Ok(())
 }
 
@@ -260,6 +335,7 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_notification::init())
         .plugin(
             tauri_plugin_log::Builder::new()
                 .level(if cfg!(debug_assertions) {
@@ -272,20 +348,31 @@ pub fn run() {
         )
         .plugin(tauri_plugin_blec::init())
         .plugin(tauri_plugin_machine_uid::init())
-        .on_window_event(|_window, event| {
-            if matches!(event, tauri::WindowEvent::CloseRequested { .. }) {
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::Focused(focused) = event {
+                ota_notifications::focused(*focused);
+            }
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                let app = window.app_handle().clone();
                 tauri::async_runtime::spawn(async {
-                    let _ = disconnect_active_channel().await;
+                    if let Err(error) = exit_app(app).await {
+                        tauri_plugin_log::log::error!("退出前断开设备失败：{error}");
+                    }
                 });
             }
         });
 
     #[cfg(any(target_os = "windows", target_os = "macos", target_os = "linux"))]
-    let builder = builder.plugin(tauri_plugin_serialplugin::init());
+    let builder = builder
+        .plugin(tauri_plugin_serialplugin::init())
+        .plugin(tauri_plugin_opener::init());
 
     builder
         .setup(move |app| {
+            ota_notifications::init(app.handle().clone())?;
             app.manage(LicenseState::default());
+            app.manage(app_update::UpdateState::default());
             let app_handle = app.handle().clone();
             let fallback_handle = app_handle.clone();
             if let Err(error) = std::thread::Builder::new()
@@ -316,6 +403,10 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             license_status,
+            app_update::check_app_update,
+            app_update::download_app_update,
+            app_update::install_app_update,
+            app_update::save_app_update,
             exit_app,
             read_component_catalog,
             write_component_catalog,

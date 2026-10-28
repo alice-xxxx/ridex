@@ -4,6 +4,7 @@ import { open, save } from "@tauri-apps/plugin-dialog"
 import { platform } from "@tauri-apps/plugin-os"
 
 import type {
+  AppUpdate,
   ConnectRequest,
   Connection,
   ConnectionClosedEvent,
@@ -108,6 +109,10 @@ export const tauriApi = {
   supportsSerial: () => ["windows", "macos", "linux"].includes(platform()),
   licenseStatus: (): Promise<LicenseStatus | null> => invoke("license_status"),
   exitApp: (): Promise<void> => invoke("exit_app"),
+  checkAppUpdate: (): Promise<AppUpdate | null> => invoke("check_app_update"),
+  downloadAppUpdate: (update: AppUpdate): Promise<void> => invoke("download_app_update", { update }),
+  installAppUpdate: (): Promise<boolean> => invoke("install_app_update"),
+  saveAppUpdate: (): Promise<boolean> => invoke("save_app_update"),
 
   discover: (request: DiscoverRequest): Promise<DiscoveredEndpoint[]> =>
     invoke<BackendDiscoveredDevice[]>("discover", { request }).then((devices) =>

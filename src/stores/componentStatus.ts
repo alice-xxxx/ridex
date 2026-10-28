@@ -101,7 +101,7 @@ export const useComponentStatusStore = defineStore("component-status", () => {
   })
 
   const inCooldown = computed(
-    () => writing.key !== null || terminal.protocol.writing || terminal.ota.active,
+    () => writing.key !== null || terminal.protocol.writing || terminal.ota.active || session.link.disconnecting,
   )
 
   function clearAutoTimer() {
@@ -117,6 +117,7 @@ export const useComponentStatusStore = defineStore("component-status", () => {
       revision === session.runtime.revision &&
       componentId === session.view.component &&
       session.authenticated &&
+      !session.link.disconnecting &&
       session.page === "status" &&
       !terminal.ota.active
     )
@@ -484,6 +485,7 @@ export const useComponentStatusStore = defineStore("component-status", () => {
       () => session.view.component,
       () => terminal.ota.active,
       () => terminal.protocol.writing,
+      () => session.link.disconnecting,
     ],
     () => {
       clearAutoTimer()
@@ -491,7 +493,8 @@ export const useComponentStatusStore = defineStore("component-status", () => {
         !session.authenticated ||
         session.page !== "status" ||
         terminal.ota.active ||
-        terminal.protocol.writing
+        terminal.protocol.writing ||
+        session.link.disconnecting
       ) {
         return
       }

@@ -5,6 +5,7 @@ import { errorMessage } from "./services/protocol"
 import { tauriApi } from "./services/tauri"
 import { loadComponentCatalogs } from "./registers/components"
 import AppHeader from "./components/AppHeader.vue"
+import { checkForAppUpdate } from "./services/appUpdate"
 import SearchPage from "./components/SearchPage.vue"
 import AuthPage from "./components/AuthPage.vue"
 import ComponentStatusPage from "./components/ComponentStatusPage.vue"
@@ -55,6 +56,7 @@ onMounted(async () => {
     }
   } finally {
     license.loading = false
+    if (license.status.authorized) void checkForAppUpdate()
   }
 })
 </script>
@@ -69,6 +71,9 @@ onMounted(async () => {
   <div v-else class="app" :class="{ 'app-terminal': session.page === 'terminal' }">
     <AppHeader />
     <main class="main">
+      <div v-if="session.link.current && session.link.connectError" class="msg msg-error" role="alert">
+        {{ session.link.connectError }}
+      </div>
       <Transition name="page" mode="out-in">
         <SearchPage v-if="session.page === 'search'" key="search" />
         <AuthPage v-else-if="session.page === 'auth'" key="auth" />

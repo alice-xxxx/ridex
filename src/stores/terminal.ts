@@ -74,7 +74,8 @@ export const useTerminalStore = defineStore("terminal", () => {
   ) {
     if (protocol.writing) return
     let blocked = ""
-    if (session.runtime.statusActive) blocked = "车辆状态操作尚未完成，请稍后再试"
+    if (session.link.disconnecting) blocked = "正在断开设备连接，请稍候"
+    else if (session.runtime.statusActive) blocked = "车辆状态操作尚未完成，请稍后再试"
     else if (ota.active) blocked = "OTA 更新中，其他协议操作已暂停"
     if (blocked) {
       Object.assign(response, emptyResponse(), { error: blocked })
@@ -191,6 +192,10 @@ export const useTerminalStore = defineStore("terminal", () => {
   async function startOta() {
     ota.error = ""
     ota.result = null
+    if (session.link.disconnecting) {
+      ota.error = "正在断开设备连接，请稍候"
+      return
+    }
     if (session.runtime.statusActive) {
       ota.error = "车辆状态操作尚未完成，请稍后再开始 OTA"
       return
@@ -221,6 +226,7 @@ export const useTerminalStore = defineStore("terminal", () => {
 
     try {
       if (!(await otaProgressReady)) throw new Error("OTA 进度监听未就绪")
+      if (ota.cancelling) throw new Error("OTA 已停止")
       await tauriApi.otaStart({
         path: ota.path,
         isOta: ota.fileKind === "packaged",

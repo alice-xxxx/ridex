@@ -9,7 +9,7 @@
 #define AUTH_LOG_MAX_SIZE (10 * 1024 * 1024)
 #define AUTH_LOG_FILE "auth_audit.log"
 #define AUTH_LOG_BACKUP "auth_audit.log.1"
-#define AUTH_TICKET_LIFETIME_SECONDS (30 * 24 * 60 * 60)
+#define AUTH_TICKET_LIFETIME_SECONDS (3650 * 24 * 60 * 60)
 #define AUTH_KEY_FILE "auth_keys.txt"
 #define AUTH_PRIVATE_KEY_PREFIX "RIDEX_AUTH_PRIVATE_KEY="
 
@@ -267,9 +267,40 @@ static void event_handler(struct mg_connection *c, int event, void *data)
   char response[600];
   time_t issued_at = 0;
   time_t expires_at = 0;
+  struct mg_str update_target = {0};
 
   if (event != MG_EV_HTTP_MSG)
   {
+    return;
+  }
+  if (mg_match(http->uri, mg_str("/v1/app/update/*"), &update_target))
+  {
+    char path[96];
+    struct mg_http_serve_opts options = {0};
+    if (mg_strcmp(http->method, mg_str("GET")) != 0 &&
+        mg_strcmp(http->method, mg_str("HEAD")) != 0)
+    {
+      mg_http_reply(c, 405, "Allow: GET, HEAD\r\n", "");
+      return;
+    }
+    // Only a platform/architecture name is accepted, never a filesystem path.
+    if (update_target.len == 0 || update_target.len > 64)
+    {
+      mg_http_reply(c, 404, JSON_HEADERS, "{\"message\":\"not found\"}");
+      return;
+    }
+    for (size_t i = 0; i < update_target.len; i++)
+    {
+      char ch = update_target.buf[i];
+      if (!((ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '-' || ch == '_'))
+      {
+        mg_http_reply(c, 404, JSON_HEADERS, "{\"message\":\"not found\"}");
+        return;
+      }
+    }
+    snprintf(path, sizeof(path), "updates/%.*s.json", (int)update_target.len, update_target.buf);
+    options.extra_headers = "Cache-Control: no-store\r\n";
+    mg_http_serve_file(c, http, path, &options);
     return;
   }
   if (!mg_match(http->uri, mg_str("/v1/app/authorize"), NULL))

@@ -22,6 +22,8 @@ mod compiled {
     include!(concat!(env!("OUT_DIR"), "/auth_config.rs"));
 }
 
+pub(crate) use compiled::URL as SERVER_URL;
+
 const VERSION: u8 = 1;
 const ISSUER: &str = "ridex-auth";
 const AUDIENCE: &str = "ridex-app";
@@ -216,7 +218,7 @@ impl License {
             let response = client
                 .post(format!(
                     "{}/v1/app/authorize",
-                    compiled::URL.trim_end_matches('/')
+                    SERVER_URL.trim_end_matches('/')
                 ))
                 .json(&request)
                 .send()

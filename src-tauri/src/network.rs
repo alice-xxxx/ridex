@@ -130,6 +130,9 @@ fn load_credentials(
         Err(_) => return Ok(None),
     };
     let header = CREDENTIAL_MAGIC.len() + 12;
+    if bytes.len() <= header || !bytes.starts_with(CREDENTIAL_MAGIC) {
+        return Ok(None);
+    }
     let nonce = match Nonce::try_from(&bytes[CREDENTIAL_MAGIC.len()..header]) {
         Ok(data) => data,
         Err(_) => return Ok(None),
@@ -154,10 +157,10 @@ fn save_credentials(app: &AppHandle, credentials: StoredCredentials) -> Result<(
         NetworkPlatform::Production => NetworkPlatform::Test,
         NetworkPlatform::Test => NetworkPlatform::Production,
     };
-    let stored_credentials = load_credentials(app, other_platform)?
+    let mut stored_credentials = load_credentials(app, other_platform)?
         .into_iter()
-        .collect::<Vec<_>>()
-        .push(credentials);
+        .collect::<Vec<_>>();
+    stored_credentials.push(credentials);
 
     let plain =
         Zeroizing::new(serde_json::to_vec(&stored_credentials).map_err(|error| error.to_string())?);

@@ -10,5 +10,9 @@
   </array>
   <key>NSBluetoothAlwaysUsageDescription</key>
   <string>RideX uses Bluetooth to discover and connect to nearby vehicle devices.</string>
+  <key>UIBackgroundModes</key>
+  <array>
+    <string>bluetooth-central</string>
+  </array>
 </dict>
 </plist>

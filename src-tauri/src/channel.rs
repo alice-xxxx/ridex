@@ -5,8 +5,6 @@
 
 use crate::{ble, modbus, network, serial};
 
-use std::sync::{atomic::AtomicBool, Arc};
-
 use serde::{Deserialize, Serialize};
 
 use tauri::AppHandle;
@@ -63,19 +61,9 @@ pub enum DiscoveredDevice {
 
 /// 统一持有一种具体传输通道。
 pub enum AnyChannel {
-    Ble {
-        channel: ble::BleChannel,
-        address: String,
-        ota_stop: Arc<AtomicBool>,
-    },
-    Serial {
-        channel: serial::SerialChannel,
-        ota_stop: Arc<AtomicBool>,
-    },
-    Network {
-        channel: network::NetworkChannel,
-        ota_stop: Arc<AtomicBool>,
-    },
+    Ble { channel: ble::BleChannel },
+    Serial { channel: serial::SerialChannel },
+    Network { channel: network::NetworkChannel },
 }
 
 impl AnyChannel {
@@ -86,24 +74,14 @@ impl AnyChannel {
                 address,
                 name,
                 timeout_ms,
-            } => {
-                let disconnect_address = address.clone();
-                ble::BleChannel::connect(address, name, timeout_ms)
-                    .await
-                    .map(|channel| Self::Ble {
-                        channel,
-                        address: disconnect_address,
-                        ota_stop: Arc::new(AtomicBool::new(false)),
-                    })
-                    .map_err(|error| error.to_string())
-            }
+            } => ble::BleChannel::connect(address, name, timeout_ms)
+                .await
+                .map(|channel| Self::Ble { channel })
+                .map_err(|error| error.to_string()),
             ConnectRequest::Serial { path, baud_rate } => {
                 serial::SerialChannel::connect(app.clone(), path, baud_rate)
                     .await
-                    .map(|channel| Self::Serial {
-                        channel,
-                        ota_stop: Arc::new(AtomicBool::new(false)),
-                    })
+                    .map(|channel| Self::Serial { channel })
                     .map_err(|error| error.to_string())
             }
             ConnectRequest::Network {
@@ -116,10 +94,7 @@ impl AnyChannel {
                 app, name, platform, &username, &password, timeout_ms,
             )
             .await
-            .map(|channel| Self::Network {
-                channel,
-                ota_stop: Arc::new(AtomicBool::new(false)),
-            }),
+            .map(|channel| Self::Network { channel }),
         }
     }
 
@@ -145,10 +120,8 @@ impl AnyChannel {
     /// 断开当前通道并释放其底层资源。
     pub async fn disconnect(&mut self) -> Result<(), String> {
         match self {
-            Self::Ble {
-                channel, address, ..
-            } => channel
-                .disconnect(address)
+            Self::Ble { channel } => channel
+                .disconnect()
                 .await
                 .map_err(|error| error.to_string()),
             Self::Serial { channel, .. } => channel

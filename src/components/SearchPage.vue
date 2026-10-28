@@ -19,6 +19,11 @@ const form = reactive({
   activitySeconds: 0,
 })
 let activityClock: ReturnType<typeof setInterval> | undefined
+let autoScanTimer: ReturnType<typeof setTimeout> | undefined
+const autoScanReady = computed(() =>
+  access.mode === "ble" && session.page === "search" && !link.current &&
+  !access.scanning && !link.connecting && !link.disconnecting && !access.error,
+)
 const namedDevices = computed(() => {
   const keyword = form.filterKeyword.trim().toLowerCase()
   return access.endpoints
@@ -36,6 +41,10 @@ const namedDevices = computed(() => {
 const serialDevices = computed(() =>
   access.endpoints.filter((device) => device.transport === "serial"),
 )
+watch(autoScanReady, (ready) => {
+  clearTimeout(autoScanTimer)
+  if (ready && !document.hidden) autoScanTimer = setTimeout(scanBle, 3000)
+})
 watch(
   [() => access.scanning, () => link.connecting],
   ([isScanning, isConnecting]) => {
@@ -52,16 +61,28 @@ watch(
 watch(
   () => access.mode,
   (mode) => {
-    if (mode === "serial" && access.serialSupported && !serialDevices.value.length) {
+    if (mode === "ble") scanBle()
+    else if (mode === "serial" && access.serialSupported && !serialDevices.value.length) {
       session.discover("serial")
     }
   },
 )
 onMounted(async () => {
   session.loadSerialSupport()
+  document.addEventListener("visibilitychange", scanBle)
+  scanBle()
   await selectNetworkPlatform(form.network.platform)
 })
-onUnmounted(() => clearInterval(activityClock))
+onUnmounted(() => {
+  clearInterval(activityClock)
+  clearTimeout(autoScanTimer)
+  document.removeEventListener("visibilitychange", scanBle)
+})
+
+function scanBle() {
+  clearTimeout(autoScanTimer)
+  if (autoScanReady.value && !document.hidden) void session.discover("ble")
+}
 
 function rssiLevel(rssi: number) {
   if (rssi >= -40) return "excellent"
