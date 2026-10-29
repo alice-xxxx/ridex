@@ -150,7 +150,9 @@ jobs:
     name: Build Android APK (${{ matrix.variant }})
     needs: create-release
     runs-on: ubuntu-24.04
-    environment: APK_KEY_STORE
+    environment:
+      name: APK_KEY_STORE
+      deployment: false
     permissions:
       contents: write
     strategy:
