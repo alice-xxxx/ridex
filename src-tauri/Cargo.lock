@@ -400,8 +400,6 @@ dependencies = [
 [[package]]
 name = "blec"
 version = "0.18.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "959cb845d4b101fad6558eabd4d7bd777c2cf4c3daa082da41e7b4ce586ad2c4"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -418,6 +416,7 @@ dependencies = [
  "tokio-stream",
  "tracing",
  "uuid",
+ "windows 0.62.2",
 ]
 
 [[package]]
@@ -3949,11 +3948,14 @@ dependencies = [
  "aes-gcm",
  "base64 0.22.1",
  "bin_file",
+ "block2",
  "chrono",
  "crc",
  "crossbeam-queue",
  "ecb",
  "md5",
+ "objc2",
+ "objc2-ui-kit",
  "p256",
  "rand 0.10.1",
  "reqwest 0.12.28",
@@ -4976,8 +4978,6 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-blec"
 version = "0.18.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b0300f2b0e709ea8b20db6202ae166a92c1c78d1a74ff0f9035a0a7c20b2714"
 dependencies = [
  "blec",
  "tauri",

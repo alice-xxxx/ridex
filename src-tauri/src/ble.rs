@@ -7,7 +7,12 @@
 
 use crate::modbus;
 
-use std::{collections::HashMap, fmt, sync::Arc, time::Duration};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt,
+    sync::Arc,
+    time::Duration,
+};
 
 use aes::cipher::{Block, BlockModeDecrypt, BlockModeEncrypt, KeyInit};
 use aes::Aes128;
@@ -43,10 +48,12 @@ const DISCONNECT_TIMEOUT: Duration = Duration::from_secs(12);
 
 /// BLE 扫描结果。
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DeviceInfo {
     pub name: String,
     pub address: String,
     pub rssi: Option<i16>,
+    pub system_connected: bool,
 }
 
 /// BLE 独立实现的错误类型。
@@ -105,7 +112,7 @@ pub struct BleChannel {
 }
 
 impl BleChannel {
-    /// 扫描设备、去重、删除无名称设备，并按信号强度排序。
+    /// 合并扫描和系统已连接设备，去重并按信号强度排序。
     pub async fn discover(
         timeout_ms: u64,
         service_uuid: Option<&str>,
@@ -116,45 +123,73 @@ impl BleChannel {
             ));
         }
 
-        let filter = match service_uuid {
-            Some(value) => ScanFilter::Service(
-                Uuid::parse_str(value).map_err(|_| BleError::InvalidArgument("服务 UUID 无效"))?,
-            ),
-            None => ScanFilter::None,
-        };
+        let service = service_uuid
+            .map(Uuid::parse_str)
+            .transpose()
+            .map_err(|_| BleError::InvalidArgument("服务 UUID 无效"))?;
+        let filter = service.map_or(ScanFilter::None, ScanFilter::Service);
 
         let (sender, mut receiver) = mpsc::channel(100);
         let scanner = handler()?;
-        scanner
+        let scan_start = scanner
             .discover(Some(sender), timeout_ms, filter, false)
-            .await
-            .map_err(plugin_error)?;
+            .await;
 
         let mut devices = HashMap::new();
         let deadline = Instant::now() + Duration::from_millis(timeout_ms);
-        loop {
-            let Some(remaining) = deadline.checked_duration_since(Instant::now()) else {
-                // blec 的扫描任务在向结果通道发送数据时使用 expect。必须先停止该
-                // 任务，等它释放 sender 后才能结束接收，否则 Android release 的
-                // panic=abort 会直接退出整个应用。
-                scanner.stop_scan().await.map_err(plugin_error)?;
-                while let Some(batch) = receiver.recv().await {
-                    for device in batch {
-                        devices.insert(device.address.clone(), device);
+        let scan = async {
+            loop {
+                let Some(remaining) = deadline.checked_duration_since(Instant::now()) else {
+                    // blec 的扫描任务在向结果通道发送数据时使用 expect。必须先停止该
+                    // 任务，等它释放 sender 后才能结束接收，否则 Android release 的
+                    // panic=abort 会直接退出整个应用。
+                    scanner.stop_scan().await.map_err(plugin_error)?;
+                    while let Some(batch) = receiver.recv().await {
+                        for device in batch {
+                            devices.insert(device.address.clone(), device);
+                        }
                     }
-                }
-                break;
-            };
+                    break;
+                };
 
-            match timeout(remaining, receiver.recv()).await {
-                Ok(Some(batch)) => {
-                    for device in batch {
-                        devices.insert(device.address.clone(), device);
+                match timeout(remaining, receiver.recv()).await {
+                    Ok(Some(batch)) => {
+                        for device in batch {
+                            devices.insert(device.address.clone(), device);
+                        }
+                    }
+                    Ok(None) => break,
+                    Err(_) => continue,
+                }
+            }
+            Ok::<(), BleError>(())
+        };
+        let (scan, system_devices) = tokio::join!(
+            scan,
+            timeout_at(
+                deadline,
+                scanner.system_connected_devices(service.unwrap_or(SERVICE_UUID))
+            )
+        );
+        scan?;
+        let mut system_addresses = HashSet::new();
+        match system_devices {
+            Ok(Ok(system_devices)) => {
+                for device in system_devices {
+                    system_addresses.insert(device.address.clone());
+                    let existing = devices
+                        .entry(device.address.clone())
+                        .or_insert_with(|| device.clone());
+                    if existing.name.trim().is_empty() || existing.name == existing.address {
+                        existing.name = device.name;
                     }
                 }
-                Ok(None) => break,
-                Err(_) => continue,
             }
+            Ok(Err(error)) => tauri_plugin_log::log::debug!("System BLE lookup failed: {error}"),
+            Err(_) => tauri_plugin_log::log::debug!("System BLE lookup timed out"),
+        }
+        if devices.is_empty() {
+            scan_start.map_err(plugin_error)?;
         }
 
         let mut devices: Vec<_> = devices.into_values().collect();
@@ -169,13 +204,17 @@ impl BleChannel {
         Ok(devices
             .into_iter()
             .filter_map(|device| {
-                if device.name.trim().is_empty() || device.address.trim().is_empty() {
+                let system_connected = system_addresses.contains(&device.address);
+                if device.address.trim().is_empty()
+                    || (!system_connected && device.name.trim().is_empty())
+                {
                     return None;
                 }
                 Some(DeviceInfo {
                     name: device.name,
                     address: device.address,
                     rssi: device.rssi,
+                    system_connected,
                 })
             })
             .collect())

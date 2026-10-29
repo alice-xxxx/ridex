@@ -1,0 +1,4 @@
+[submodule "tauri-plugin-blec"]
+	path = src-tauri/plugins/tauri-plugin-blec
+	url = https://github.com/alice-xxxx/tauri-plugin-blec.git
+	branch = ridex

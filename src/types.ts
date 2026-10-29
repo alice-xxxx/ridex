@@ -16,6 +16,7 @@ export interface DiscoveredEndpoint {
   id: string
   name: string
   signal: number | null
+  systemConnected?: boolean
 }
 
 interface BleDiscoverRequest {

@@ -30,7 +30,9 @@ const namedDevices = computed(() => {
     .filter((device) => device.transport === "ble")
     .filter((device) => {
       const name = device.name.trim()
-      if (!name || name === device.id) return false
+      if (!name || name === device.id) {
+        return device.systemConnected && (!keyword || device.id.toLowerCase().includes(keyword))
+      }
       const normalized = name.toLowerCase()
       return (
         (!form.deviceFilterEnabled || normalized.startsWith("g") || normalized.startsWith("1")) &&
@@ -170,7 +172,7 @@ function connectNetwork() {
             timeoutMs: 8000,
           })
           ">
-        <span class="device-main"><strong>{{ device.name }}</strong><code>{{ device.id }}</code></span>
+        <span class="device-main"><strong>{{ device.name && device.name !== device.id ? device.name : 'BLE 设备' }}</strong><code>{{ device.id }}{{ device.systemConnected ? ' · 系统已连接' : '' }}</code></span>
         <span v-if="device.signal !== null" class="rssi" :class="rssiLevel(device.signal)">{{ device.signal
         }}<small>dBm</small></span>
         <span class="connect-arrow">{{

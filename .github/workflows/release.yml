@@ -80,6 +80,8 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          submodules: recursive
 
       - uses: actions/setup-node@v7
         with:
@@ -156,6 +158,8 @@ jobs:
       matrix: ${{ fromJSON(inputs.package_mode == 'multi' && '{"include":[{"variant":"arm64","tauri_args":"-t aarch64","rust_targets":"aarch64-linux-android","minify":"false"},{"variant":"universal","tauri_args":"","rust_targets":"aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android","minify":"true"}]}' || '{"include":[{"variant":"arm64","tauri_args":"-t aarch64","rust_targets":"aarch64-linux-android","minify":"false"}]}') }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          submodules: recursive
 
       - uses: actions/setup-node@v7
         with:
@@ -268,6 +272,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v7
+        with:
+          submodules: recursive
 
       - uses: actions/setup-node@v7
         with:

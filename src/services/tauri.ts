@@ -31,7 +31,7 @@ import type {
 } from "../types"
 
 type BackendDiscoveredDevice =
-  | { ble: { name: string; address: string; rssi: number | null } }
+  | { ble: { name: string; address: string; rssi: number | null; systemConnected?: boolean } }
   | { serial: { path: string; name: string } }
 
 function connectionFrom(request: ConnectRequest): Connection {
@@ -69,6 +69,7 @@ function discoveredEndpoint(device: BackendDiscoveredDevice): DiscoveredEndpoint
       id: device.ble.address,
       name: device.ble.name,
       signal: device.ble.rssi,
+      systemConnected: device.ble.systemConnected ?? false,
     }
   }
   return {

@@ -290,7 +290,7 @@ async fn ota_start(
                 _ = disconnected => Err("BLE 已断开".to_string()),
                 result = async {
                     ota_notifications::request_permission().await;
-                    ota_background::set_active(true).await?;
+                    ota_background::set_active(&app, true).await?;
                     ota_notifications::start();
                     let firmware = ota::get_bin(&path, is_ota, &app)?;
                     let bytes_per_cycle = firmware.len();
@@ -310,10 +310,10 @@ async fn ota_start(
             }
         } => result,
     };
-    if let Err(error) = ota_background::set_active(false).await {
+    ota_notifications::finish(result.as_ref().map(|_| ()).map_err(Clone::clone)).await;
+    if let Err(error) = ota_background::set_active(&app, false).await {
         tauri_plugin_log::log::warn!("结束 OTA 后台服务失败：{error}");
     }
-    ota_notifications::finish(result.as_ref().map(|_| ()).map_err(Clone::clone));
     OTA_STOP.lock().await.take();
 
     result
@@ -349,8 +349,13 @@ pub fn run() {
         .plugin(tauri_plugin_blec::init())
         .plugin(tauri_plugin_machine_uid::init())
         .on_window_event(|window, event| {
-            if let tauri::WindowEvent::Focused(focused) = event {
-                ota_notifications::focused(*focused);
+            match event {
+                tauri::WindowEvent::Focused(focused) => ota_notifications::focused(*focused),
+                #[cfg(mobile)]
+                tauri::WindowEvent::Suspended => ota_notifications::focused(false),
+                #[cfg(mobile)]
+                tauri::WindowEvent::Resumed => ota_notifications::focused(true),
+                _ => {}
             }
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                 api.prevent_close();

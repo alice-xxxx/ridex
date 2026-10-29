@@ -8,7 +8,7 @@ enum Event {
     Start,
     Focused(bool),
     Progress(u8),
-    Finish(Result<(), String>),
+    Finish(Result<(), String>, tokio::sync::oneshot::Sender<()>),
 }
 
 static EVENTS: OnceLock<mpsc::Sender<Event>> = OnceLock::new();
@@ -26,10 +26,17 @@ pub fn init(app: AppHandle) -> std::io::Result<()> {
             for event in receiver {
                 match event {
                     Event::Permission(reply) => {
-                        allowed = matches!(
-                            app.notification().request_permission(),
-                            Ok(PermissionState::Granted)
-                        );
+                        allowed = match app.notification().request_permission() {
+                            Ok(PermissionState::Granted) => true,
+                            Ok(state) => {
+                                tauri_plugin_log::log::warn!("OTA 通知未授权：{state:?}");
+                                false
+                            }
+                            Err(error) => {
+                                tauri_plugin_log::log::warn!("申请 OTA 通知权限失败：{error}");
+                                false
+                            }
+                        };
                         let _ = reply.send(());
                         continue;
                     }
@@ -43,7 +50,7 @@ pub fn init(app: AppHandle) -> std::io::Result<()> {
                         }
                     }
                     Event::Progress(value) => progress = Some(value),
-                    Event::Finish(result) => {
+                    Event::Finish(result, reply) => {
                         progress = None;
                         if allowed {
                             #[cfg(any(target_os = "android", target_os = "ios"))]
@@ -74,6 +81,7 @@ pub fn init(app: AppHandle) -> std::io::Result<()> {
                                 }
                             }
                         }
+                        let _ = reply.send(());
                         continue;
                     }
                 }
@@ -125,6 +133,15 @@ pub fn progress(value: u8) {
     send(Event::Progress(value));
 }
 
-pub fn finish(result: Result<(), String>) {
-    send(Event::Finish(result));
+pub async fn finish(result: Result<(), String>) {
+    let (sender, receiver) = tokio::sync::oneshot::channel();
+    send(Event::Finish(result, sender));
+    // Give the notification time to reach iOS before ending the background task,
+    // without making OTA cleanup depend on an unresponsive system dialog or IPC.
+    if tokio::time::timeout(std::time::Duration::from_secs(2), receiver)
+        .await
+        .is_err()
+    {
+        tauri_plugin_log::log::warn!("发送 OTA 结果通知等待超时");
+    }
 }
