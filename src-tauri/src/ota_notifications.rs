@@ -7,14 +7,13 @@ enum Event {
     Permission(tokio::sync::oneshot::Sender<()>),
     Start,
     Focused(bool),
-    Progress(u8),
     Finish(Result<(), String>, tokio::sync::oneshot::Sender<()>),
 }
 
 static EVENTS: OnceLock<mpsc::Sender<Event>> = OnceLock::new();
 
 // Mobile notification calls wait for the main thread. Keep them off the UI and OTA threads,
-// and process them in order so an old progress update cannot overwrite the result.
+// and process them in order so background reminders cannot overwrite the result.
 pub fn init(app: AppHandle) -> std::io::Result<()> {
     let (sender, receiver) = mpsc::channel();
     std::thread::Builder::new()
@@ -22,7 +21,7 @@ pub fn init(app: AppHandle) -> std::io::Result<()> {
         .spawn(move || {
             let mut allowed = false;
             let mut background = false;
-            let mut progress = None;
+            let mut active = false;
             for event in receiver {
                 match event {
                     Event::Permission(reply) => {
@@ -40,8 +39,11 @@ pub fn init(app: AppHandle) -> std::io::Result<()> {
                         let _ = reply.send(());
                         continue;
                     }
-                    Event::Start => progress = Some(0),
+                    Event::Start => active = true,
                     Event::Focused(focused) => {
+                        if background == !focused {
+                            continue;
+                        }
                         background = !focused;
                         // Android's notification also belongs to the foreground service.
                         #[cfg(target_os = "ios")]
@@ -49,10 +51,9 @@ pub fn init(app: AppHandle) -> std::io::Result<()> {
                             let _ = app.notification().remove_active(vec![1]);
                         }
                     }
-                    Event::Progress(value) => progress = Some(value),
                     Event::Finish(result, reply) => {
-                        progress = None;
-                        if allowed {
+                        let was_active = std::mem::replace(&mut active, false);
+                        if allowed && was_active {
                             #[cfg(any(target_os = "android", target_os = "ios"))]
                             let _ = app.notification().remove_active(vec![1]);
                             if background {
@@ -85,22 +86,18 @@ pub fn init(app: AppHandle) -> std::io::Result<()> {
                         continue;
                     }
                 }
-                if let Some(value) = progress.filter(|_| allowed && background) {
+                if active && allowed && background {
                     let notification = app
                         .notification()
                         .builder()
                         .id(1)
                         .title("OTA 正在升级")
-                        .body(if value == 100 {
-                            "已传输 100%，等待设备确认".into()
-                        } else {
-                            format!("已传输 {value}%，请保持设备连接")
-                        })
+                        .body("固件正在更新，请保持设备连接，返回软件可查看进度")
                         .ongoing();
                     #[cfg(target_os = "android")]
                     let notification = notification.channel_id("ota");
                     if let Err(error) = notification.show() {
-                        tauri_plugin_log::log::warn!("发送 OTA 进度通知失败：{error}");
+                        tauri_plugin_log::log::warn!("发送 OTA 后台通知失败：{error}");
                     }
                 }
             }
@@ -127,10 +124,6 @@ pub fn start() {
 
 pub fn focused(focused: bool) {
     send(Event::Focused(focused));
-}
-
-pub fn progress(value: u8) {
-    send(Event::Progress(value));
 }
 
 pub async fn finish(result: Result<(), String>) {

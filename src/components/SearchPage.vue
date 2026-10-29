@@ -39,6 +39,7 @@ const namedDevices = computed(() => {
         (!keyword || normalized.includes(keyword))
       )
     })
+    .sort((left, right) => Number(!!right.systemConnected) - Number(!!left.systemConnected))
 })
 const serialDevices = computed(() =>
   access.endpoints.filter((device) => device.transport === "serial"),

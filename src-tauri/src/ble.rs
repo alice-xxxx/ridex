@@ -42,9 +42,13 @@ const AUTH_KEY: [u8; 16] = [
 
 const BYTE_RING_CAPACITY: usize = 8 * 1024;
 const FRAME_RING_CAPACITY: usize = 64;
-pub(crate) const OTA_ENCRYPTED_PACKET_SIZE: usize = (modbus::OTA_PACKET_SIZE + 6).div_ceil(16) * 16;
+const OTA_ENCRYPTED_PACKET_SIZE: usize = (modbus::OTA_PACKET_SIZE + 6).div_ceil(16) * 16;
 const AUTH_RESPONSE_LENGTH: usize = 8;
 const DISCONNECT_TIMEOUT: Duration = Duration::from_secs(12);
+
+pub(crate) fn ota_packets_per_batch(payload_size: usize) -> usize {
+    (payload_size / OTA_ENCRYPTED_PACKET_SIZE).max(3)
+}
 
 /// BLE 扫描结果。
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -408,7 +412,7 @@ impl BleChannel {
         if requests.is_empty()
             || payload_size == 0
             || timeout_ms == 0
-            || requests.len() > (payload_size / OTA_ENCRYPTED_PACKET_SIZE).max(3)
+            || requests.len() > ota_packets_per_batch(payload_size)
             || !requests
                 .iter()
                 .all(|request| matches!(request, modbus::Protocol::OtaData { .. }))

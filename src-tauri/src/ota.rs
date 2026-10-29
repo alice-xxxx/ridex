@@ -1,4 +1,4 @@
-use crate::{ble::OTA_ENCRYPTED_PACKET_SIZE, channel::AnyChannel, modbus};
+use crate::{ble::ota_packets_per_batch, channel::AnyChannel, modbus};
 
 use std::{io::Write, time::Duration};
 
@@ -247,7 +247,7 @@ impl AnyChannel {
         let packets_per_batch = if payload_size == 0 {
             1
         } else {
-            (payload_size / OTA_ENCRYPTED_PACKET_SIZE).max(3)
+            ota_packets_per_batch(payload_size)
         };
         tauri_plugin_log::log::info!(
             "OTA 每批 {packets_per_batch} 包，BLE 写入载荷 {payload_size} 字节"
@@ -297,13 +297,6 @@ impl AnyChannel {
                 }
                 let completed_packets =
                     usize::from(cycle) * packets + first_packet + requests.len();
-                if completed_packets * 10 / total_packets
-                    > (usize::from(cycle) * packets + first_packet) * 10 / total_packets
-                {
-                    crate::ota_notifications::progress(
-                        (completed_packets * 100 / total_packets) as u8,
-                    );
-                }
                 let progress = (completed_packets * 100 / total_packets) as u8;
                 if progress != last_progress {
                     last_progress = progress;
