@@ -43,6 +43,7 @@ export const useTerminalStore = defineStore("terminal", () => {
     description: "",
     fileKind: "binary" as OtaFileKind,
     cycles: 1,
+    fastMode: false,
     info: null as OtaFileInfo | null,
     active: false,
     cancelling: false,
@@ -239,6 +240,7 @@ export const useTerminalStore = defineStore("terminal", () => {
           description: ota.description,
         },
         cycles: ota.cycles,
+        fastMode: ota.fastMode,
       })
       ota.progress = 100
       ota.result = { type: "success", message: `更新完成：${ota.cycles} 次成功` }

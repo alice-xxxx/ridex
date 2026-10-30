@@ -257,6 +257,7 @@ async fn ota_start(
     is_ota: bool,
     request: OtaPackRequest,
     cycles: u16,
+    fast_mode: bool,
     status: State<'_, LicenseState>,
 ) -> Result<OtaStartResult, String> {
     status.ensure_authorized()?;
@@ -303,6 +304,7 @@ async fn ota_start(
                             request.hardware_version,
                             request.software_version,
                             cycles,
+                            fast_mode,
                         )
                         .await?;
                     Ok(OtaStartResult { bytes_per_cycle })

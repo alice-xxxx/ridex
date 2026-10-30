@@ -192,6 +192,10 @@ const duration = (seconds: number) =>
                   <input v-model="ota.softwareVersion" placeholder="0304" class="input input-sm input-mono" />
                 </div>
               </div>
+              <label v-if="session.transport === 'ble'" class="cp-fast-mode">
+                <input v-model="ota.fastMode" type="checkbox" role="switch" :disabled="ota.active" />
+                快速模式
+              </label>
               <dl v-if="ota.info" class="ota-meta">
                 <div>
                   <dt>产品类型</dt>
@@ -442,6 +446,18 @@ const duration = (seconds: number) =>
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   background: var(--bg);
+}
+
+.cp-fast-mode {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.cp-fast-mode input {
+  accent-color: var(--primary);
 }
 
 .ota-meta {

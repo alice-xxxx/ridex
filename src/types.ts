@@ -135,6 +135,7 @@ export interface OtaRequest {
   isOta: boolean
   request: OtaMetadata
   cycles: number
+  fastMode: boolean
 }
 
 export interface OtaStartResult {

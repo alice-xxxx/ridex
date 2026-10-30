@@ -221,6 +221,7 @@ impl AnyChannel {
         hardware_version: [u8; 2],
         software_version: [u8; 2],
         cycles: u16,
+        fast_mode: bool,
     ) -> Result<(), String> {
         if firmware.is_empty() {
             return Err("OTA 固件内容为空".to_string());
@@ -238,7 +239,7 @@ impl AnyChannel {
         let mut last_progress = 0;
         // F1 完整帧为 134 字节，独立 AES 加密后为 144 字节。
         let payload_size = match self {
-            Self::Ble { channel } => channel
+            Self::Ble { channel } if fast_mode => channel
                 .payload_size()
                 .await
                 .map_err(|error| error.to_string())?,
@@ -290,10 +291,13 @@ impl AnyChannel {
                     first_packet + requests.len(),
                     packets,
                 );
-                if let Self::Ble { channel } = self {
-                    ota_ble_batch(channel, &requests, payload_size, &stage).await?;
-                } else {
-                    self.ota_modbus_tx(&requests[0], 5_000, &stage).await?;
+                match self {
+                    Self::Ble { channel } if fast_mode => {
+                        ota_ble_batch(channel, &requests, payload_size, &stage).await?;
+                    }
+                    _ => {
+                        self.ota_modbus_tx(&requests[0], 5_000, &stage).await?;
+                    }
                 }
                 let completed_packets =
                     usize::from(cycle) * packets + first_packet + requests.len();
