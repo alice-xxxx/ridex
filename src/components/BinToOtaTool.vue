@@ -5,6 +5,7 @@ import { tauriApi } from "../services/tauri"
 import { useSessionStore } from "../stores/session"
 import { displayFileName } from "../utils/displayFileName"
 import FourGOtaPanel from "./FourGOtaPanel.vue"
+import { version as appVersion } from "../../package.json"
 
 defineProps<{ deviceId: string }>()
 
@@ -89,6 +90,7 @@ const convert = async () => {
           4G OTA
         </button>
       </div>
+      <span class="tool-version">Ride{{ appVersion }}</span>
     </div>
 
     <div v-show="mode === 'convert'" class="bin-ota-tool">
@@ -159,10 +161,23 @@ const convert = async () => {
 
 .tool-toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
+}
+
+.tool-version {
+  margin-left: auto;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(0, 143, 149, 0.08);
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .page-back {
