@@ -1,6 +1,6 @@
 export type Transport = "ble" | "serial" | "network"
 export type NetworkPlatform = "production" | "test"
-export type ActiveView = "search" | "auth" | "status" | "terminal" | "ota-tool"
+export type ActiveView = "search" | "auth" | "status" | "terminal" | "settings" | "ota-tool" | "import-config" | "about"
 export type ComponentId = "VCU" | "BMS" | "BLE" | "MCU" | "ABS" | "TFT" | "灯控盒"
 
 export interface Connection {

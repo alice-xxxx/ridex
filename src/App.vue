@@ -1,20 +1,34 @@
 <script setup lang="ts">
-import { onMounted, reactive } from "vue"
+import { computed, onMounted, reactive, ref } from "vue"
 import { useSessionStore } from "./stores/session"
 import { errorMessage } from "./services/protocol"
 import { tauriApi } from "./services/tauri"
 import { loadComponentCatalogs } from "./registers/components"
-import AppHeader from "./components/AppHeader.vue"
 import { checkForAppUpdate } from "./services/appUpdate"
 import SearchPage from "./components/SearchPage.vue"
 import AuthPage from "./components/AuthPage.vue"
 import ComponentStatusPage from "./components/ComponentStatusPage.vue"
 import CommPage from "./components/CommPage.vue"
 import BinToOtaTool from "./components/BinToOtaTool.vue"
+import SettingsPage from "./components/SettingsPage.vue"
 import LicenseBlockedPage from "./components/LicenseBlockedPage.vue"
 import type { LicenseStatus } from "./types"
 
 const session = useSessionStore()
+const toolMode = ref<"convert" | "4g">("convert")
+const fourGVisited = ref(false)
+const deviceNav = computed(() => session.page === "status" || session.page === "terminal")
+const showBottomNav = computed(() => deviceNav.value || session.page === "search" || session.page === "settings")
+
+function goHome() {
+  session.goTo("search")
+}
+
+function openTool(mode: "convert" | "4g") {
+  toolMode.value = mode
+  if (mode === "4g") fourGVisited.value = true
+  session.goTo("ota-tool")
+}
 const license = reactive({
   loading: true,
   status: { authorized: false, deviceId: "", message: null } as LicenseStatus,
@@ -68,47 +82,62 @@ onMounted(async () => {
   </main>
   <LicenseBlockedPage v-else-if="!license.status.authorized" :device-id="license.status.deviceId"
     :message="license.status.message" />
-  <div v-else class="app" :class="{ 'app-terminal': session.page === 'terminal' }">
-    <AppHeader />
+  <div v-else class="app" :class="{ 'app-terminal': session.page === 'terminal', 'app-detail': !showBottomNav }">
     <main class="main">
       <div v-if="session.link.current && session.link.connectError" class="msg msg-error" role="alert">
         {{ session.link.connectError }}
       </div>
       <Transition name="page" mode="out-in">
-        <SearchPage v-if="session.page === 'search'" key="search" />
-        <AuthPage v-else-if="session.page === 'auth'" key="auth" />
-        <ComponentStatusPage v-else-if="session.page === 'status'" key="status" />
-        <BinToOtaTool v-else-if="session.page === 'ota-tool'" key="ota-tool" :device-id="license.status.deviceId" />
-        <CommPage v-else key="terminal" />
+        <KeepAlive include="BinToOtaTool,CommPage,SearchPage">
+          <SearchPage v-if="session.page === 'search'" key="search" />
+          <AuthPage v-else-if="session.page === 'auth'" key="auth" />
+          <ComponentStatusPage v-else-if="session.page === 'status'" key="status" />
+          <CommPage v-else-if="session.page === 'terminal'" key="terminal" />
+          <BinToOtaTool v-else-if="session.page === 'ota-tool'" key="ota-tool"
+            :initial-mode="toolMode" :four-g-visited="fourGVisited" :device-id="license.status.deviceId" />
+          <SettingsPage v-else :key="session.page" :section="session.page"
+            :device-id="license.status.deviceId" @open-tool="openTool" />
+        </KeepAlive>
       </Transition>
     </main>
 
-    <nav v-if="session.authenticated" class="bottom-nav" aria-label="页面导航">
-      <button class="bottom-nav-item" :class="{ active: session.page === 'status' }"
-        :aria-current="session.page === 'status' ? 'page' : undefined" @click="session.goTo('status')">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-          <rect x="3" y="3" width="7" height="7" rx="1.5" />
-          <rect x="14" y="3" width="7" height="7" rx="1.5" />
-          <rect x="3" y="14" width="7" height="7" rx="1.5" />
-          <rect x="14" y="14" width="7" height="7" rx="1.5" />
-        </svg>
-        <span>状态</span>
-      </button>
-      <button class="bottom-nav-item" :class="{ active: session.page === 'terminal' }"
-        :aria-current="session.page === 'terminal' ? 'page' : undefined" @click="session.goTo('terminal')">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-        </svg>
-        <span>通信</span>
-      </button>
-      <button class="bottom-nav-item" :class="{ active: session.page === 'ota-tool' }"
-        :aria-current="session.page === 'ota-tool' ? 'page' : undefined" @click="session.goTo('ota-tool')">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-          <rect x="6" y="6" width="12" height="12" rx="2" />
-          <path d="M9 2v4m6-4v4M9 18v4m6-4v4M2 9h4m-4 6h4m12-6h4m-4 6h4" />
-        </svg>
-        <span>固件工具</span>
-      </button>
+    <nav v-if="showBottomNav" class="bottom-nav" :aria-label="deviceNav ? '设备导航' : '主导航'">
+      <template v-if="deviceNav">
+        <button type="button" class="bottom-nav-item" :class="{ active: session.page === 'status' }"
+          :aria-current="session.page === 'status' ? 'page' : undefined" @click="session.goTo('status')">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+          <span>状态</span>
+        </button>
+        <button type="button" class="bottom-nav-item" :class="{ active: session.page === 'terminal' }"
+          :aria-current="session.page === 'terminal' ? 'page' : undefined" @click="session.goTo('terminal')">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+          </svg>
+          <span>通信</span>
+        </button>
+      </template>
+      <template v-else>
+        <button type="button" class="bottom-nav-item" :class="{ active: session.page === 'search' }"
+          :aria-current="session.page === 'search' ? 'page' : undefined" @click="goHome">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" />
+          </svg>
+          <span>主页</span>
+        </button>
+        <button type="button" class="bottom-nav-item" :class="{ active: session.page === 'settings' }"
+          :aria-current="session.page === 'settings' ? 'page' : undefined" @click="session.goTo('settings')">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="3" />
+            <path d="m10 2-.5 2.3-2.1.9-2-1.3-2.5 2.5 1.3 2-.9 2.1L1 11v2l2.3.5.9 2.1-1.3 2 2.5 2.5 2-1.3 2.1.9L10 22h4l.5-2.3 2.1-.9 2 1.3 2.5-2.5-1.3-2 .9-2.1L23 13v-2l-2.3-.5-.9-2.1 1.3-2-2.5-2.5-2 1.3-2.1-.9L14 2z" />
+          </svg>
+          <span>设置</span>
+        </button>
+      </template>
     </nav>
   </div>
 </template>
@@ -162,6 +191,10 @@ onMounted(async () => {
   padding: 1.5rem max(1.75rem, env(safe-area-inset-right)) calc(5rem + env(safe-area-inset-bottom)) max(1.75rem, env(safe-area-inset-left));
 }
 
+.app-detail .main {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
 .bottom-nav {
   position: fixed;
   inset: auto 0 0;
@@ -179,11 +212,12 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   gap: 0.125rem;
+  min-height: 3rem;
   padding: 0.375rem 0;
   border: 0;
   color: var(--text-muted);
   background: none;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
 }

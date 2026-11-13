@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useSessionStore } from "../stores/session"
 import DeviceDisconnectButton from "./DeviceDisconnectButton.vue"
+import DeviceBackButton from "./DeviceBackButton.vue"
 
 const session = useSessionStore()
 const { link, authorization } = session
@@ -10,11 +11,7 @@ const { link, authorization } = session
   <section class="page auth-page">
     <div class="auth-context">
       <div class="device-plate">
-        <div class="device-symbol" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6">
-            <path d="M7 7h10v10H7zM10 2v5m4-5v5m-4 10v5m4-5v5M2 10h5m-5 4h5m10-4h5m-5 4h5" />
-          </svg>
-        </div>
+        <DeviceBackButton />
         <div class="device-meta">
           <span>已连接设备</span>
           <strong>{{ link.current?.name || "未命名设备" }}</strong>
@@ -76,17 +73,6 @@ const { link, authorization } = session
   border-radius: var(--radius-lg);
   background: var(--surface);
   box-shadow: var(--shadow-md);
-}
-
-.device-symbol {
-  display: grid;
-  place-items: center;
-  width: 2.875rem;
-  height: 2.875rem;
-  flex: 0 0 auto;
-  border-radius: 0.5625rem;
-  color: var(--primary);
-  background: var(--primary-light);
 }
 
 .device-meta {

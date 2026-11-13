@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from "vue"
+import { computed, reactive, watch } from "vue"
 import { storeToRefs } from "pinia"
 import { formatContentValue, runtimeItemKey } from "../registers/codec"
-import { applyComponentCatalog, catalogFileName } from "../registers/components"
 import { useComponentStatusStore } from "../stores/componentStatus"
 import { useSessionStore } from "../stores/session"
 import { useTerminalStore } from "../stores/terminal"
-import { errorMessage } from "../services/protocol"
-import { tauriApi } from "../services/tauri"
 import ComponentPicker from "./ComponentPicker.vue"
-import DeviceDisconnectButton from "./DeviceDisconnectButton.vue"
+import DeviceBackButton from "./DeviceBackButton.vue"
 import RegCard from "./RegCard.vue"
 import type { StatusCategory } from "../types"
 
@@ -20,56 +17,6 @@ const { data, inCooldown } = storeToRefs(status)
 const { reading, writing } = status
 const { ota } = terminal
 const ui = reactive({ categoryId: "", query: "" })
-const importInput = ref<HTMLInputElement>()
-const importing = ref(false)
-const importError = ref("")
-const importSuccess = ref("")
-const catalogRevision = ref(0)
-
-watch(
-  () => session.view.component,
-  () => {
-    importError.value = ""
-    importSuccess.value = ""
-  },
-)
-
-async function importCatalog(event: Event) {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-  input.value = ""
-  if (!file) return
-
-  importError.value = ""
-  importSuccess.value = ""
-  const componentId = session.view.component
-  const fileName = catalogFileName(componentId)
-  if (file.name !== fileName) {
-    importError.value = `当前部件只允许导入 ${fileName}`
-    return
-  }
-  if (reading.active || inCooldown.value) {
-    importError.value = "状态操作进行中，请稍后导入"
-    return
-  }
-
-  importing.value = true
-  try {
-    const source = await file.text()
-    await tauriApi.writeComponentCatalog(fileName, source)
-    applyComponentCatalog(componentId, source)
-    if (session.view.component === componentId) {
-      catalogRevision.value += 1
-      status.reloadCatalog()
-    }
-    importSuccess.value = `${fileName} 已覆盖当前配置`
-  } catch (error) {
-    importError.value = errorMessage(error, "导入配置失败")
-  } finally {
-    importing.value = false
-  }
-}
-
 const categories = computed(() => data.value.categories)
 const categoryItems = (category: StatusCategory) => [
   ...category.registers.map((item) => ({ item, categoryName: category.name })),
@@ -118,10 +65,7 @@ const progressText = computed(() =>
 <template>
   <section class="page component-status-page" aria-label="部件状态">
     <div class="status-toolbar">
-      <div v-if="session.link.current" class="status-device">
-        <strong>{{ session.link.current.name || "未命名设备" }}</strong>
-        <DeviceDisconnectButton :disabled="session.link.disconnecting" @click="session.disconnect" />
-      </div>
+      <DeviceBackButton />
       <ComponentPicker class="status-component-picker" />
       <nav class="status-categories" aria-label="状态分类">
         <button v-for="category in categories" :key="category.id" class="status-category"
@@ -151,12 +95,6 @@ const progressText = computed(() =>
           <input v-model="ui.query" type="search" placeholder="搜索" aria-label="搜索" />
         </label>
 
-        <input ref="importInput" type="file" accept=".json,application/json" hidden @change="importCatalog" />
-        <button class="btn btn-outline status-import" type="button"
-          :disabled="importing || inCooldown || reading.active" @click="importInput?.click()">
-          {{ importing ? "导入中" : "导入配置" }}
-        </button>
-
         <button class="btn btn-outline status-refresh" type="button" :disabled="inCooldown || reading.active"
           :aria-busy="reading.active" :aria-label="reading.active ? progressText : '立即读取状态'" @click="status.refresh">
           <span v-if="reading.active" class="spinner" aria-hidden="true"></span>
@@ -183,8 +121,6 @@ const progressText = computed(() =>
     </div>
     <div v-if="reading.error" class="msg msg-error" role="alert">{{ reading.error }}</div>
     <div v-if="writing.error" class="msg msg-error" role="alert">{{ writing.error }}</div>
-    <div v-if="importError" class="msg msg-error" role="alert">{{ importError }}</div>
-    <div v-if="importSuccess" class="msg msg-success" role="status">{{ importSuccess }}</div>
     <div v-if="ota.active" class="msg msg-warn">OTA 更新期间，状态读取和修改已暂停。</div>
 
     <div v-if="!availableItems.length" class="component-empty">
@@ -193,7 +129,7 @@ const progressText = computed(() =>
     <div v-else-if="!visibleItems.length" class="component-empty">当前部件没有匹配的内容</div>
     <div v-else class="component-list">
       <RegCard v-for="entry in visibleItems"
-        :key="`${session.view.component}:${catalogRevision}:${runtimeItemKey(entry.item)}`" :item="entry.item"
+        :key="`${session.view.component}:${runtimeItemKey(entry.item)}`" :item="entry.item"
         :disabled="inCooldown" :writing="writing.key === runtimeItemKey(entry.item)" :write-error="writing.error"
         :write-register="status.writeRegister" :write-coil="status.writeCoil" />
     </div>
@@ -216,37 +152,6 @@ const progressText = computed(() =>
   border-radius: var(--radius-md);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
-}
-
-.status-device {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  flex: 0 1 10.625rem;
-  min-width: 0;
-}
-
-.status-device strong {
-  min-width: 0;
-  overflow: hidden;
-  color: var(--text-secondary);
-  font-size: 0.72rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.status-device button {
-  display: grid;
-  place-items: center;
-  width: 2.125rem;
-  height: 2.125rem;
-  flex: 0 0 auto;
-  border: 0;
-  border-radius: 0.375rem;
-  color: var(--danger);
-  background: var(--danger-light);
-  cursor: pointer;
 }
 
 .status-category-picker {
@@ -348,12 +253,6 @@ const progressText = computed(() =>
   padding: 0.375rem 0.625rem;
 }
 
-.status-import {
-  min-height: 2.25rem;
-  padding: 0.375rem 0.625rem;
-  white-space: nowrap;
-}
-
 .status-refresh svg {
   width: 1.0625rem;
   height: 1.0625rem;
@@ -451,7 +350,7 @@ const progressText = computed(() =>
 @media (max-width: 767px) {
   .status-toolbar {
     display: grid;
-    grid-template-columns: minmax(6.25rem, 0.75fr) minmax(5.625rem, 0.85fr) minmax(8.75rem, 1.25fr);
+    grid-template-columns: 2.5rem repeat(2, minmax(0, 1fr));
     gap: 0.375rem;
     padding: 0.375rem;
   }
@@ -465,20 +364,6 @@ const progressText = computed(() =>
     grid-column: 3;
     grid-row: 1;
     min-width: 0;
-  }
-
-  .status-device {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .status-device strong {
-    font-size: 0.68rem;
-  }
-
-  .status-device button {
-    width: 1.875rem;
-    height: 2.125rem;
   }
 
   .status-component-picker {
@@ -534,42 +419,12 @@ const progressText = computed(() =>
     padding: 0;
   }
 
-  .status-import {
-    min-height: 2.5rem;
-    padding: 0.375rem 0.5rem;
-  }
-
   .status-refresh-text {
     display: none;
   }
 
   .status-auto {
     min-height: 2.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .status-toolbar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .status-device {
-    grid-column: 1 / -1;
-    grid-row: 1;
-  }
-
-  .status-component-picker {
-    grid-column: 1;
-    grid-row: 2;
-  }
-
-  .status-category-picker {
-    grid-column: 2;
-    grid-row: 2;
-  }
-
-  .status-search-actions {
-    grid-row: 3;
   }
 }
 

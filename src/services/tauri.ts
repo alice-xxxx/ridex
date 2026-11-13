@@ -164,6 +164,8 @@ export const tauriApi = {
     invoke<string | null>("read_component_catalog", { fileName }),
   writeComponentCatalog: (fileName: string, source: string): Promise<void> =>
     invoke("write_component_catalog", { fileName, source }),
+  clearComponentCatalog: (fileName: string): Promise<void> =>
+    invoke("clear_component_catalog", { fileName }),
 
   pickFirmware: (): Promise<string | null> =>
     open({

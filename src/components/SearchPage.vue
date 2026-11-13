@@ -20,14 +20,19 @@ const form = reactive({
 })
 let activityClock: ReturnType<typeof setInterval> | undefined
 let autoScanTimer: ReturnType<typeof setTimeout> | undefined
+let serialAutoScanStarted = false
 const autoScanReady = computed(() =>
-  access.mode === "ble" && session.page === "search" && !link.current &&
+  access.mode === "ble" && session.page === "search" &&
   !access.scanning && !link.connecting && !link.disconnecting && !access.error,
+)
+const currentDevice = computed(() =>
+  link.current?.transport === access.mode && access.mode !== "network" ? link.current : null,
 )
 const namedDevices = computed(() => {
   const keyword = form.filterKeyword.trim().toLowerCase()
   return access.endpoints
     .filter((device) => device.transport === "ble")
+    .filter((device) => device.id !== (currentDevice.value?.transport === "ble" ? currentDevice.value.endpoint : null))
     .filter((device) => {
       const name = device.name.trim()
       if (!name || name === device.id) {
@@ -42,7 +47,8 @@ const namedDevices = computed(() => {
     .sort((left, right) => Number(!!right.systemConnected) - Number(!!left.systemConnected))
 })
 const serialDevices = computed(() =>
-  access.endpoints.filter((device) => device.transport === "serial"),
+  access.endpoints.filter((device) => device.transport === "serial" && device.id !==
+    (currentDevice.value?.transport === "serial" ? currentDevice.value.endpoint : null)),
 )
 watch(autoScanReady, (ready) => {
   clearTimeout(autoScanTimer)
@@ -64,14 +70,18 @@ watch(
 watch(
   () => access.mode,
   (mode) => {
+    serialAutoScanStarted = false
     if (mode === "ble") scanBle()
-    else if (mode === "serial" && access.serialSupported && !serialDevices.value.length) {
-      session.discover("serial")
-    }
+    else if (mode === "serial") scanSerial()
   },
+)
+watch(
+  [() => access.scanning, () => link.connecting, () => link.disconnecting],
+  scanSerial,
 )
 onMounted(async () => {
   session.loadSerialSupport()
+  if (access.mode === "serial") scanSerial()
   document.addEventListener("visibilitychange", scanBle)
   scanBle()
   await selectNetworkPlatform(form.network.platform)
@@ -85,6 +95,15 @@ onUnmounted(() => {
 function scanBle() {
   clearTimeout(autoScanTimer)
   if (autoScanReady.value && !document.hidden) void session.discover("ble")
+}
+
+function scanSerial() {
+  if (
+    serialAutoScanStarted || access.mode !== "serial" || !access.serialSupported ||
+    access.scanning || link.connecting || link.disconnecting || serialDevices.value.length
+  ) return
+  serialAutoScanStarted = true
+  void session.discover("serial")
 }
 
 function rssiLevel(rssi: number) {
@@ -131,14 +150,6 @@ function connectNetwork() {
         @click="access.mode = 'serial'">
         <span>COM</span>
       </button>
-      <button type="button" class="ota-tool-button" aria-label="固件工具" title="固件工具" @click="session.goTo('ota-tool')">
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"
-          aria-hidden="true">
-          <path d="M12 3v11" />
-          <path d="m8 10 4 4 4-4" />
-          <path d="M5 17v3a1 1 0 001 1h12a1 1 0 001-1v-3" />
-        </svg>
-      </button>
     </nav>
 
     <div v-if="access.mode === 'ble'" class="ble-controls">
@@ -163,6 +174,26 @@ function connectNetwork() {
     <div v-if="access.error || link.connectError" class="msg msg-error">
       {{ access.error || link.connectError }}
     </div>
+    <div v-if="access.mode === 'serial'" class="serial-options">
+      <label class="filter-box"><span>波特率</span><select v-model.number="form.serialBaud" class="input input-mono">
+          <option v-for="baud in [9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600]" :key="baud" :value="baud">
+            {{ baud }}
+          </option>
+        </select></label>
+      <button class="btn btn-primary serial-refresh-button"
+        :disabled="access.scanning || link.connecting || link.disconnecting" @click="session.discover('serial')">
+        {{ access.scanning ? "正在读取" : "刷新串口" }}
+      </button>
+    </div>
+    <div v-if="currentDevice" class="connected-device">
+      <button type="button" class="connected-main" :disabled="link.connecting || link.disconnecting"
+        @click="session.goTo(session.authenticated ? 'status' : 'auth')">
+        <span><strong>{{ currentDevice.name || currentDevice.endpoint }}</strong><code>{{ currentDevice.endpoint }}</code></span>
+        <span class="connected-label">已连接</span>
+      </button>
+      <button type="button" class="btn btn-outline btn-sm" :disabled="link.connecting || link.disconnecting"
+        @click="session.disconnect">断开</button>
+    </div>
     <div v-if="access.mode === 'ble' && namedDevices.length" class="device-grid">
       <button v-for="device in namedDevices" :key="device.id" class="device-card"
         :disabled="link.connecting || link.disconnecting" @click="
@@ -182,20 +213,8 @@ function connectNetwork() {
       </button>
     </div>
 
-    <div v-else-if="access.mode === 'ble' && !access.scanning" class="empty-state">
+    <div v-else-if="access.mode === 'ble' && !access.scanning && !currentDevice" class="empty-state">
       <strong>尚未发现设备</strong>
-    </div>
-
-    <div v-if="access.mode === 'serial'" class="serial-options">
-      <label class="filter-box"><span>波特率</span><select v-model.number="form.serialBaud" class="input input-mono">
-          <option v-for="baud in [9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600]" :key="baud" :value="baud">
-            {{ baud }}
-          </option>
-        </select></label>
-      <button class="btn btn-primary serial-refresh-button"
-        :disabled="access.scanning || link.connecting || link.disconnecting" @click="session.discover('serial')">
-        {{ access.scanning ? "正在读取" : "刷新串口" }}
-      </button>
     </div>
 
     <div v-if="access.mode === 'serial' && serialDevices.length" class="device-grid">
@@ -209,7 +228,7 @@ function connectNetwork() {
       </button>
     </div>
 
-    <div v-else-if="access.mode === 'serial' && !access.scanning" class="empty-state">
+    <div v-else-if="access.mode === 'serial' && !access.scanning && !currentDevice" class="empty-state">
       <strong>没有可用串口</strong>
       <p>连接 USB 串口设备后点击刷新串口。</p>
     </div>
@@ -248,7 +267,7 @@ function connectNetwork() {
 
 .access-modes {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) 2.625rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.4375rem;
   min-width: 0;
   margin-bottom: 0.75rem;
@@ -259,7 +278,7 @@ function connectNetwork() {
 }
 
 .access-modes.without-serial {
-  grid-template-columns: repeat(2, minmax(0, 1fr)) 2.625rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .access-modes button {
@@ -282,22 +301,6 @@ function connectNetwork() {
   color: var(--primary);
   background: var(--primary-light);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 18%, transparent);
-}
-
-.access-modes .ota-tool-button {
-  display: grid;
-  place-items: center;
-  width: 2.25rem;
-  min-height: 2.25rem;
-  padding: 0;
-  justify-self: center;
-  border-radius: 0.5rem;
-  color: var(--primary);
-  background: transparent;
-}
-
-.access-modes .ota-tool-button:hover {
-  background: var(--primary-light);
 }
 
 .ble-controls {
@@ -425,6 +428,61 @@ function connectNetwork() {
 .device-grid {
   display: grid;
   gap: 0.5rem;
+}
+
+.connected-device {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  border: 1px solid var(--primary);
+  border-radius: 0.5625rem;
+  background: var(--surface);
+}
+
+.connected-main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.25rem;
+  border: 0;
+  color: var(--text-primary);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.connected-main > span:first-child {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.connected-main strong,
+.connected-main code {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.connected-main code {
+  color: var(--text-muted);
+  font-size: 0.65rem;
+}
+
+.connected-label {
+  flex: 0 0 auto;
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.connected-device > button:last-child {
+  flex: 0 0 auto;
 }
 
 .device-card {

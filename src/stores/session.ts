@@ -47,7 +47,7 @@ export const useSessionStore = defineStore("session", () => {
   const transport = computed(() => link.current?.transport ?? access.mode)
   const supportsOta = computed(() => link.current?.supportsOta === true)
   const page = computed<ActiveView>(() => {
-    if (view.active === "ota-tool") return "ota-tool"
+    if (["search", "settings", "ota-tool", "import-config", "about"].includes(view.active)) return view.active
     if (!link.current) return "search"
     if (!link.current.authenticated) return "auth"
     return view.active
@@ -108,11 +108,16 @@ export const useSessionStore = defineStore("session", () => {
     access.scanning = true
     access.error = ""
     try {
-      access.endpoints = await tauriApi.discover(
+      const endpoints = await tauriApi.discover(
         transportType === "ble"
           ? { transport: "ble", timeoutMs: 3000, serviceUuid: null }
           : { transport: "serial" },
       )
+      if (transportType === "ble" && (access.mode !== "ble" || page.value !== "search" || !endpoints.length)) return
+      access.endpoints = [
+        ...access.endpoints.filter((device) => device.transport !== transportType),
+        ...endpoints,
+      ]
     } catch (error) {
       access.error = errorMessage(error)
       if (link.current) handleDisconnected(error)
@@ -124,6 +129,10 @@ export const useSessionStore = defineStore("session", () => {
   async function connect(request: ConnectRequest): Promise<boolean> {
     if (link.connecting || link.disconnecting) return false
 
+    if (link.current) {
+      runtime.revision += 1
+      runtime.statusActive = false
+    }
     const revision = runtime.revision
     link.connecting = true
     if (request.transport === "ble") link.endpoint = request.address
@@ -191,8 +200,17 @@ export const useSessionStore = defineStore("session", () => {
     }
   }
 
+  async function returnToSearch() {
+    if (link.current?.transport === "network") {
+      await disconnect()
+      return
+    }
+    if (link.current) access.mode = link.current.transport
+    view.active = "search"
+  }
+
   function goTo(next: ActiveView) {
-    if (next === "search" || next === "ota-tool") {
+    if (next === "search" || next === "settings" || next === "ota-tool" || next === "import-config" || next === "about") {
       view.active = next
     } else if (next === "auth" && link.current && !authenticated.value) {
       view.active = next
@@ -217,6 +235,7 @@ export const useSessionStore = defineStore("session", () => {
     connect,
     authenticate,
     disconnect,
+    returnToSearch,
     goTo,
     handleDisconnected,
   }

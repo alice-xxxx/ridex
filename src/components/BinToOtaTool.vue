@@ -1,16 +1,13 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from "vue"
+import { computed, reactive } from "vue"
 import { errorMessage, parseHexBytes } from "../services/protocol"
 import { tauriApi } from "../services/tauri"
 import { useSessionStore } from "../stores/session"
 import { displayFileName } from "../utils/displayFileName"
 import FourGOtaPanel from "./FourGOtaPanel.vue"
-import { version as appVersion } from "../../package.json"
-
-defineProps<{ deviceId: string }>()
+const props = defineProps<{ deviceId: string; initialMode: "convert" | "4g"; fourGVisited: boolean }>()
 
 const session = useSessionStore()
-const mode = ref<"convert" | "4g">("convert")
 
 const tool = reactive({
   inputPath: "",
@@ -44,7 +41,7 @@ const chooseFirmware = async () => {
 }
 
 const leaveTool = () => {
-  session.goTo(session.authenticated ? "status" : "search")
+  session.goTo("settings")
 }
 
 const convert = async () => {
@@ -80,20 +77,10 @@ const convert = async () => {
   <section class="page bin-ota-page">
     <div class="tool-toolbar">
       <button type="button" class="btn btn-outline btn-sm page-back" @click="leaveTool">返回</button>
-      <div class="tool-tabs" role="tablist" aria-label="固件工具模式">
-        <button type="button" role="tab" :aria-selected="mode === 'convert'" :class="{ active: mode === 'convert' }"
-          @click="mode = 'convert'">
-          本地转换
-        </button>
-        <button type="button" role="tab" :aria-selected="mode === '4g'" :class="{ active: mode === '4g' }"
-          @click="mode = '4g'">
-          4G OTA
-        </button>
-      </div>
-      <span class="tool-version">Ride{{ appVersion }}</span>
+      <h1>{{ props.initialMode === 'convert' ? '本地转换' : '4G OTA' }}</h1>
     </div>
 
-    <div v-show="mode === 'convert'" class="bin-ota-tool">
+    <div v-show="props.initialMode === 'convert'" class="bin-ota-tool">
       <div class="bin-ota-body">
         <div class="bin-file-row">
           <div class="bin-file-copy">
@@ -146,7 +133,7 @@ const convert = async () => {
         <div v-if="tool.result" class="msg msg-success">{{ tool.result }}</div>
       </div>
     </div>
-    <FourGOtaPanel v-show="mode === '4g'" :device-id="deviceId" />
+    <FourGOtaPanel v-if="props.fourGVisited" v-show="props.initialMode === '4g'" :device-id="deviceId" />
   </section>
 </template>
 
@@ -168,16 +155,10 @@ const convert = async () => {
   margin-bottom: 0.75rem;
 }
 
-.tool-version {
-  margin-left: auto;
-  padding: 0.3rem 0.7rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: rgba(0, 143, 149, 0.08);
-  color: var(--primary);
-  font-size: 0.75rem;
-  font-weight: 700;
-  white-space: nowrap;
+.tool-toolbar h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  line-height: 1.3;
 }
 
 .page-back {
@@ -191,33 +172,6 @@ const convert = async () => {
   flex-direction: column;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-}
-
-.tool-tabs {
-  display: inline-flex;
-  gap: 0.1875rem;
-  margin-left: auto;
-  padding: 0.1875rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: rgba(11, 24, 38, 0.035);
-}
-
-.tool-tabs button {
-  padding: 0.375rem 0.875rem;
-  border: 0;
-  border-radius: 0.375rem;
-  color: var(--text-muted);
-  background: transparent;
-  font-size: 0.72rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.tool-tabs button.active {
-  color: var(--primary);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
 }

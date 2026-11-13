@@ -29,6 +29,8 @@ export const devices: DeviceDefinition[] = [
   { name: "灯控盒", address: lightCatalogJson.deviceAddress, fileName: "light.json", catalog: lightCatalogJson },
 ]
 
+const bundledCatalogs = new Map(devices.map((device) => [device.name, device.catalog]))
+
 export function catalogFileName(id: ComponentId): string {
   const fileName = devices.find((device) => device.name === id)?.fileName
   if (!fileName) throw new Error(`部件 ${id} 没有状态目录`)
@@ -47,6 +49,15 @@ export function applyComponentCatalog(id: ComponentId, source: string): void {
     device.catalog = undefined
     device.catalogError = `${device.fileName}：${errorMessage(error)}`
   }
+}
+
+export function resetComponentCatalog(id: ComponentId): void {
+  const device = devices.find((entry) => entry.name === id)
+  const catalog = bundledCatalogs.get(id)
+  if (!device || !catalog) throw new Error(`部件 ${id} 没有内置状态目录`)
+  device.catalog = catalog
+  device.address = catalog.deviceAddress
+  device.catalogError = undefined
 }
 
 export async function loadComponentCatalogs(): Promise<void> {

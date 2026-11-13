@@ -109,6 +109,21 @@ fn write_component_catalog(
 }
 
 #[tauri::command]
+fn clear_component_catalog(
+    file_name: String,
+    app: AppHandle,
+    status: State<'_, LicenseState>,
+) -> Result<(), String> {
+    status.ensure_authorized()?;
+    let path = component_catalog_path(&app, &file_name)?;
+    match fs::remove_file(path) {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(format!("清空 {file_name} 失败: {error}")),
+    }
+}
+
+#[tauri::command]
 async fn discover(
     request: DiscoverRequest,
     app: AppHandle,
@@ -417,6 +432,7 @@ pub fn run() {
             exit_app,
             read_component_catalog,
             write_component_catalog,
+            clear_component_catalog,
             discover,
             network_credentials,
             connect,

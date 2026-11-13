@@ -3,7 +3,7 @@ import { computed, reactive, ref, watch } from "vue"
 import { useTerminalStore } from "../stores/terminal"
 import { useSessionStore } from "../stores/session"
 import DeviceAddressPicker from "./DeviceAddressPicker.vue"
-import DeviceDisconnectButton from "./DeviceDisconnectButton.vue"
+import DeviceBackButton from "./DeviceBackButton.vue"
 
 const terminal = useTerminalStore()
 const session = useSessionStore()
@@ -23,11 +23,7 @@ const form = reactive({
   },
 })
 
-const operationMode = reactive({
-  registers: "read" as "read" | "write",
-  coils: "read" as "read" | "write",
-})
-const activeTab = ref(ota.active || ota.result ? "ota" : "registers")
+const activeTab = ref(ota.active || ota.result ? "ota" : "registers-read")
 
 const operations = [
   {
@@ -49,12 +45,15 @@ const operations = [
 ] as const
 
 const activeOperation = computed(() =>
-  operations.find((operation) => operation.key === activeTab.value),
+  operations.find((operation) => activeTab.value.startsWith(operation.key)),
 )
+const activeMode = computed<"read" | "write">(() => activeTab.value.endsWith("write") ? "write" : "read")
 
 const tabs = [
-  { key: "registers", label: "寄存器" },
-  { key: "coils", label: "线圈" },
+  { key: "registers-read", label: "寄存器读" },
+  { key: "registers-write", label: "寄存器写" },
+  { key: "coils-read", label: "线圈读" },
+  { key: "coils-write", label: "线圈写" },
   { key: "ota", label: "固件更新" },
 ]
 const resultIcons = { success: "✓", warn: "!", error: "×" }
@@ -63,12 +62,12 @@ const visibleTabs = computed(() =>
 )
 
 watch(() => session.supportsOta, (supported) => {
-  if (!supported && activeTab.value === "ota") activeTab.value = "registers"
+  if (!supported && activeTab.value === "ota") activeTab.value = "registers-read"
 })
 
-function sendOperation(kind: "registers" | "coils") {
+function sendOperation(kind: "registers" | "coils", mode: "read" | "write") {
   const { device, start, count, valuesText } = form[kind]
-  if (operationMode[kind] === "read") {
+  if (mode === "read") {
     const request = { device, start, count }
     return kind === "registers" ? terminal.readRegisters(request) : terminal.readCoils(request)
   }
@@ -89,11 +88,8 @@ const duration = (seconds: number) =>
 <template>
   <section class="page comm-page" :class="{ 'comm-page-fill': activeTab !== 'ota' }">
     <div class="cp-workspace">
-      <nav class="cp-modes" aria-label="协议类型">
-        <div v-if="session.link.current" class="comm-device">
-          <strong>{{ session.link.current.name || "未命名设备" }}</strong>
-          <DeviceDisconnectButton :disabled="session.link.disconnecting" @click="session.disconnect" />
-        </div>
+      <nav class="cp-modes" aria-label="通信操作">
+        <DeviceBackButton />
         <button v-for="tab in visibleTabs" :key="tab.key" type="button" class="cp-mode"
           :class="{ active: activeTab === tab.key }" @click="activeTab = tab.key">
           <strong>{{ tab.label }}</strong>
@@ -106,18 +102,7 @@ const duration = (seconds: number) =>
             <div class="cp-block">
               <div class="cp-block-head">
                 <span class="cp-block-title">{{ activeOperation.label }}</span>
-                <div class="cp-block-controls">
-                  <div class="cp-operation-switch" role="group" :aria-label="`${activeOperation.label}操作`">
-                    <button type="button" :class="{ active: operationMode[activeOperation.key] === 'read' }"
-                      :aria-pressed="operationMode[activeOperation.key] === 'read'"
-                      @click="operationMode[activeOperation.key] = 'read'">读取</button>
-                    <button type="button" :class="{ active: operationMode[activeOperation.key] === 'write' }"
-                      :aria-pressed="operationMode[activeOperation.key] === 'write'"
-                      @click="operationMode[activeOperation.key] = 'write'">写入</button>
-                  </div>
-                  <span class="cp-fc">{{ operationMode[activeOperation.key] === "read" ? activeOperation.readCode :
-                    activeOperation.writeCode }}</span>
-                </div>
+                <span class="cp-fc">{{ activeMode === "read" ? activeOperation.readCode : activeOperation.writeCode }}</span>
               </div>
               <div class="cp-fields">
                 <div class="cp-field">
@@ -130,7 +115,7 @@ const duration = (seconds: number) =>
                   <input v-model.number="form[activeOperation.key].start" type="number" min="0" max="65535"
                     class="input input-sm" />
                 </div>
-                <div v-if="operationMode[activeOperation.key] === 'read'" class="cp-field">
+                <div v-if="activeMode === 'read'" class="cp-field">
                   <label>数量</label>
                   <input v-model.number="form[activeOperation.key].count" type="number" min="1"
                     class="input input-sm" />
@@ -143,12 +128,12 @@ const duration = (seconds: number) =>
               </div>
               <div class="cp-action cp-operation-action">
                 <button class="btn btn-primary" :disabled="protocol.writing"
-                  @click="sendOperation(activeOperation.key)">
-                  {{ operationMode[activeOperation.key] === "read" ? "读取" : "写入" }} →
+                  @click="sendOperation(activeOperation.key, activeMode)">
+                  {{ activeMode === "read" ? "读取" : "写入" }} →
                 </button>
               </div>
-              <div v-if="protocol[activeOperation.key][operationMode[activeOperation.key]].error" class="msg msg-error">
-                {{ protocol[activeOperation.key][operationMode[activeOperation.key]].error }}
+              <div v-if="protocol[activeOperation.key][activeMode].error" class="msg msg-error">
+                {{ protocol[activeOperation.key][activeMode].error }}
               </div>
             </div>
           </div>
@@ -295,39 +280,6 @@ const duration = (seconds: number) =>
 </template>
 
 <style scoped>
-.comm-device {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.625rem;
-  grid-column: 1 / -1;
-  min-width: 0;
-  padding: 0.1875rem 0.3125rem 0.4375rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.comm-device strong {
-  min-width: 0;
-  overflow: hidden;
-  color: var(--text-secondary);
-  font-size: 0.75rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.comm-device button {
-  display: grid;
-  place-items: center;
-  width: 2.125rem;
-  height: 2.125rem;
-  flex: 0 0 auto;
-  border: 0;
-  border-radius: 0.375rem;
-  color: var(--danger);
-  background: var(--danger-light);
-  cursor: pointer;
-}
-
 .cp-block {
   display: flex;
   flex-direction: column;
@@ -368,38 +320,6 @@ const duration = (seconds: number) =>
     "Consolas",
     monospace;
   text-align: center;
-}
-
-.cp-block-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.cp-operation-switch {
-  display: flex;
-  gap: 0.125rem;
-  padding: 0.1875rem;
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  background: var(--bg);
-}
-
-.cp-operation-switch button {
-  padding: 0.3125rem 0.5625rem;
-  border: 0;
-  border-radius: 0.3125rem;
-  color: var(--text-muted);
-  background: transparent;
-  font-size: 0.68rem;
-  font-weight: 650;
-  cursor: pointer;
-}
-
-.cp-operation-switch button.active {
-  color: var(--text-primary);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
 }
 
 .cp-fields {
@@ -693,8 +613,7 @@ const duration = (seconds: number) =>
 }
 
 .cp-modes {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
   gap: 0.25rem;
   padding: 0.25rem;
   overflow-x: auto;
@@ -704,7 +623,8 @@ const duration = (seconds: number) =>
 }
 
 .cp-mode {
-  min-width: 0;
+  flex: 1 0 4rem;
+  min-width: 4rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1103,10 +1023,6 @@ const duration = (seconds: number) =>
   .cp-mode {
     gap: 0.3125rem;
     padding: 0.5rem 0.3125rem;
-  }
-
-  .cp-mode strong {
-    font-size: 0.62rem;
   }
 
   .cp-action {

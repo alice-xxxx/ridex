@@ -251,8 +251,10 @@ function codecValue(content: ContentDefinition, bytes: number[]): unknown {
     }
     case "hex_value":
       return hexValue(bytes)
+    case "version_2byte":
+      return `${bytes[0]}.${String(bytes[1]).padStart(2, "0")}`
     case "version_4byte":
-      return bytes.map((byte) => byte.toString(16).padStart(2, "0").toUpperCase()).join(".")
+      return bytes.map(String).join(".")
     case "signal_4g": {
       const raw = numberValue(bytes)
       if (raw === 0) return "无信号，未联网"

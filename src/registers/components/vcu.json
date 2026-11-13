@@ -26,6 +26,10 @@
       "count": 11
     },
     {
+      "start": 413,
+      "count": 4
+    },
+    {
       "start": 500,
       "count": 10
     }
@@ -36,155 +40,172 @@
       "count": 52
     }
   ],
-  "categories": {
-    "vehicle_config": {
-      "name": "车辆配置",
-      "registers": [
-        0,
-        1,
-        9,
-        17,
-        18,
-        19,
-        20,
-        21,
-        22,
-        23,
-        24,
-        25,
-        26,
-        28,
-        29,
-        30,
-        31,
-        32,
-        33,
-        34,
-        35
-      ]
-    },
-    "running_status": {
-      "name": "运行状态",
-      "registers": [
-        42,
-        44,
-        45,
-        47,
-        49,
-        50,
-        51,
-        52,
-        53,
-        54,
-        55,
-        56,
-        57,
-        58,
-        59,
-        60,
-        61,
-        62,
-        63,
-        64
-      ]
-    },
-    "diagnostics": {
-      "name": "诊断监测",
-      "registers": [
-        37,
-        41,
-        65,
-        66,
-        67,
-        68,
-        69,
-        73,
-        83,
-        85,
-        87,
-        88,
-        89,
-        90,
-        91,
-        100,
-        104,
-        105,
-        106,
-        107,
-        108,
-        109,
-        110,
-        111,
-        112,
-        114,
-        235,
-        237,
-        238,
-        239,
-        241,
-        243,
-        244,
-        246,
-        248
-      ]
-    },
-    "connectivity": {
-      "name": "通信连接",
-      "registers": [
-        300,
-        301,
-        302,
-        303,
-        400,
-        401,
-        402,
-        403,
-        404,
-        405,
-        406,
-        407,
-        408,
-        409,
-        410,
-        500,
-        501,
-        502,
-        504,
-        506,
-        508
-      ]
-    },
-    "coil_control": {
-      "name": "线圈控制",
-      "coils": [
-        1,
-        6,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        17,
-        24,
-        25,
-        26,
-        27,
-        28,
-        29,
-        30,
-        33,
-        34,
-        36,
-        37,
-        38,
-        41,
-        50,
-        51,
-        52
-      ]
-    }
+  "categories": {      "device_info": {
+          "name": "设备信息",
+          "registers": [
+              0,
+              1,
+              9,
+              17,
+              30,
+              31,
+              32
+          ],
+          "coils": []
+      },
+      "vehicle_config": {
+          "name": "车辆配置",
+          "registers": [
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              35,
+              401,
+              402,
+              403,
+              404,
+              405,
+              406,
+              407,
+              409,
+              410
+          ],
+          "coils": []
+      },
+      "running_status": {
+          "name": "运行状态",
+          "registers": [
+              42,
+              44,
+              45,
+              47,
+              49,
+              50,
+              51,
+              52,
+              53,
+              54,
+              55,
+              56,
+              57,
+              58,
+              59,
+              60,
+              61,
+              62,
+              63,
+              64,
+              300,
+              301,
+              302,
+              303,
+              400,
+              408,
+              413,
+              414,
+              415,
+              416
+          ],
+          "coils": []
+      },
+      "feature_switches": {
+          "name": "功能开关",
+          "registers": [
+              33,
+              34
+          ],
+          "coils": [
+              1,
+              6,
+              12,
+              13,
+              14,
+              17,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              33,
+              34,
+              36,
+              37,
+              38,
+              41,
+              51,
+              52
+          ]
+      },
+      "diagnostics": {
+          "name": "故障与诊断",
+          "registers": [
+              37,
+              41,
+              65,
+              66,
+              67,
+              68,
+              69,
+              73,
+              83,
+              85,
+              87,
+              88,
+              89,
+              90,
+              91,
+              100,
+              104,
+              105,
+              106,
+              107,
+              108,
+              109,
+              110,
+              111,
+              112,
+              114,
+              235,
+              237,
+              238,
+              239,
+              241,
+              243,
+              244,
+              246,
+              248
+          ],
+          "coils": []
+      },
+      "controls": {
+          "name": "控制操作",
+          "registers": [
+              500,
+              501,
+              502,
+              504,
+              506,
+              508
+          ],
+          "coils": [
+              8,
+              9,
+              10,
+              11,
+              50
+          ]
+      }
   },
   "registers": {
     "0": {
@@ -434,6 +455,32 @@
           "on": "有灯控盒",
           "off": "无灯控盒",
           "value": null
+        },
+        {
+          "kind": "switch",
+          "bits": [
+            [
+              12,
+              12
+            ]
+          ],
+          "label": "boost",
+          "on": "有boost",
+          "off": "无boost",
+          "value": null
+        },
+        {
+          "kind": "switch",
+          "bits": [
+            [
+              13,
+              13
+            ]
+          ],
+          "label": "胎压",
+          "on": "有胎压",
+          "off": "无胎压",
+          "value": null
         }
       ]
     },
@@ -507,6 +554,64 @@
         }
       ]
     },
+    "27": {
+      "bytes": 2,
+      "writable": true,
+      "label": "按键配置",
+      "rawHex": null,
+      "content": [
+        {
+          "kind": "select",
+          "bits": [
+            [
+              0,
+              1
+            ]
+          ],
+          "label": "示廓键类型",
+          "options": [
+            {
+              "value": 0,
+              "label": "无按键"
+            },
+            {
+              "value": 1,
+              "label": "自锁键"
+            },
+            {
+              "value": 2,
+              "label": "点动键"
+            }
+          ],
+          "value": null
+        },
+        {
+          "kind": "select",
+          "bits": [
+            [
+              2,
+              3
+            ]
+          ],
+          "label": "远光键类型",
+          "options": [
+            {
+              "value": 0,
+              "label": "无按键"
+            },
+            {
+              "value": 1,
+              "label": "自锁键"
+            },
+            {
+              "value": 2,
+              "label": "点动键"
+            }
+          ],
+          "value": null
+        }
+      ]
+    },
     "28": {
       "bytes": 2,
       "writable": true,
@@ -561,7 +666,8 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "hex",
+          "kind": "value",
+          "codec": "version_2byte",
           "value": null
         }
       ]
@@ -573,7 +679,8 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "hex",
+          "kind": "value",
+          "codec": "version_2byte",
           "value": null
         }
       ]
@@ -585,7 +692,8 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "hex",
+          "kind": "value",
+          "codec": "version_2byte",
           "value": null
         }
       ]
@@ -3590,6 +3698,204 @@
           "min": 0,
           "max": 10000,
           "unit": "km"
+        }
+      ]
+    },
+    "413": {
+      "bytes": 2,
+      "writable": false,
+      "label": "前轮胎压值（0xFFFF无效值）",
+      "rawHex": null,
+      "content": [
+        {
+          "kind": "value",
+          "min": 0,
+          "max": 1275,
+          "unit": "0.01bar",
+          "value": null
+        }
+      ]
+    },
+    "414": {
+      "bytes": 2,
+      "writable": false,
+      "label": "前轮胎压温度/胎压状态",
+      "rawHex": null,
+      "content": [
+        {
+          "kind": "value",
+          "codec": "signed_i8",
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "label": "温度",
+          "unit": "℃",
+          "value": null
+        },
+        {
+          "kind": "switch",
+          "bits": [
+            [
+              0,
+              0
+            ]
+          ],
+          "label": "BLE胎压监测超时",
+          "on": "超时",
+          "off": "未超时",
+          "value": null
+        },
+        {
+          "kind": "switch",
+          "bits": [
+            [
+              1,
+              1
+            ]
+          ],
+          "label": "轮胎漏气",
+          "on": "正在漏气",
+          "off": "未漏气",
+          "value": null
+        },
+        {
+          "kind": "switch",
+          "bits": [
+            [
+              2,
+              2
+            ]
+          ],
+          "label": "胎压计故障",
+          "on": "不可恢复故障",
+          "off": "无故障",
+          "value": null
+        },
+        {
+          "kind": "switch",
+          "bits": [
+            [
+              3,
+              3
+            ]
+          ],
+          "label": "电量不足",
+          "on": "电量不足",
+          "off": "无电量不足",
+          "value": null
+        },
+        {
+          "kind": "value",
+          "bits": [
+            [
+              4,
+              7
+            ]
+          ],
+          "label": "保留位（应为0）",
+          "value": null
+        }
+      ]
+    },
+    "415": {
+      "bytes": 2,
+      "writable": false,
+      "label": "后轮胎压值（0xFFFF无效值）",
+      "rawHex": null,
+      "content": [
+        {
+          "kind": "value",
+          "min": 0,
+          "max": 1275,
+          "unit": "0.01bar",
+          "value": null
+        }
+      ]
+    },
+    "416": {
+      "bytes": 2,
+      "writable": false,
+      "label": "后轮胎压温度/胎压状态",
+      "rawHex": null,
+      "content": [
+        {
+          "kind": "value",
+          "codec": "signed_i8",
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "label": "温度",
+          "unit": "℃",
+          "value": null
+        },
+        {
+          "kind": "switch",
+          "bits": [
+            [
+              0,
+              0
+            ]
+          ],
+          "label": "BLE胎压监测超时",
+          "on": "超时",
+          "off": "未超时",
+          "value": null
+        },
+        {
+          "kind": "switch",
+          "bits": [
+            [
+              1,
+              1
+            ]
+          ],
+          "label": "轮胎漏气",
+          "on": "正在漏气",
+          "off": "未漏气",
+          "value": null
+        },
+        {
+          "kind": "switch",
+          "bits": [
+            [
+              2,
+              2
+            ]
+          ],
+          "label": "胎压计故障",
+          "on": "不可恢复故障",
+          "off": "无故障",
+          "value": null
+        },
+        {
+          "kind": "switch",
+          "bits": [
+            [
+              3,
+              3
+            ]
+          ],
+          "label": "电量不足",
+          "on": "电量不足",
+          "off": "无电量不足",
+          "value": null
+        },
+        {
+          "kind": "value",
+          "bits": [
+            [
+              4,
+              7
+            ]
+          ],
+          "label": "保留位（应为0）",
+          "value": null
         }
       ]
     },

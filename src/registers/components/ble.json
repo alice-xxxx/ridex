@@ -33,18 +33,37 @@
             "count": 4
         }
     ],
-    "categories": {
-        "switches": {
+    "categories": {        "device_info": {
+            "name": "设备信息",
+            "registers": [
+                1,
+                9,
+                17,
+                25,
+                26,
+                27,
+                28,
+                146
+            ],
+            "coils": []
+        },
+        "running_status": {
+            "name": "运行状态",
+            "registers": [
+                33,
+                34,
+                39,
+                40,
+                41
+            ],
+            "coils": []
+        },
+        "feature_switches": {
             "name": "功能开关",
             "registers": [],
             "coils": [
                 1,
                 6,
-                8,
-                9,
-                10,
-                11,
-                15,
                 17,
                 24,
                 25,
@@ -61,49 +80,20 @@
                 36,
                 37,
                 38,
-                39,
-                41,
-                100,
-                101,
-                102,
-                103
+                41
             ]
         },
-        "identity": {
-            "name": "设备信息",
+        "settings_control": {
+            "name": "设置与控制",
             "registers": [
-                1,
-                9,
-                17,
-                25,
-                26,
-                27,
-                28,
                 30,
                 31,
                 32,
-                33,
-                34
-            ],
-            "coils": []
-        },
-        "control": {
-            "name": "设备控制",
-            "registers": [
                 35,
                 36,
                 37,
                 38,
-                39,
-                40,
-                41,
-                42
-            ],
-            "coils": []
-        },
-        "diagnostics": {
-            "name": "诊断与扩展",
-            "registers": [
+                42,
                 100,
                 106,
                 108,
@@ -111,6 +101,25 @@
                 112,
                 120,
                 121,
+                130,
+                133,
+                136,
+                137
+            ],
+            "coils": [
+                8,
+                9,
+                10,
+                11,
+                15,
+                39,
+                100,
+                102
+            ]
+        },
+        "diagnostics": {
+            "name": "故障与调试",
+            "registers": [
                 122,
                 123,
                 124,
@@ -119,18 +128,16 @@
                 127,
                 128,
                 129,
-                130,
-                133,
-                136,
-                137,
                 138,
                 142,
                 143,
                 144,
-                145,
-                146
+                145
             ],
-            "coils": []
+            "coils": [
+                101,
+                103
+            ]
         }
     },
     "deviceAddress": 4,
@@ -609,6 +616,7 @@
             "content": [
                 {
                     "kind": "value",
+                    "codec": "version_2byte",
                     "value": null
                 }
             ]
@@ -621,6 +629,7 @@
             "content": [
                 {
                     "kind": "value",
+                    "codec": "version_2byte",
                     "value": null
                 }
             ]
@@ -633,6 +642,7 @@
             "content": [
                 {
                     "kind": "value",
+                    "codec": "version_2byte",
                     "value": null
                 }
             ]
@@ -645,6 +655,7 @@
             "content": [
                 {
                     "kind": "value",
+                    "codec": "version_2byte",
                     "value": null
                 }
             ]
