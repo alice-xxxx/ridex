@@ -7,12 +7,7 @@
 
 use crate::modbus;
 
-use std::{
-    collections::{HashMap, HashSet},
-    fmt,
-    sync::Arc,
-    time::Duration,
-};
+use std::{collections::HashMap, fmt, sync::Arc, time::Duration};
 
 use aes::cipher::{Block, BlockModeDecrypt, BlockModeEncrypt, KeyInit};
 use aes::Aes128;
@@ -118,6 +113,7 @@ pub struct BleChannel {
 impl BleChannel {
     /// 合并扫描和系统已连接设备，去重并按信号强度排序。
     pub async fn discover(
+        app: &tauri::AppHandle,
         timeout_ms: u64,
         service_uuid: Option<&str>,
     ) -> Result<Vec<DeviceInfo>, BleError> {
@@ -132,6 +128,8 @@ impl BleChannel {
             .transpose()
             .map_err(|_| BleError::InvalidArgument("服务 UUID 无效"))?;
         let filter = service.map_or(ScanFilter::None, ScanFilter::Service);
+
+        check_permissions().await?;
 
         let (sender, mut receiver) = mpsc::channel(100);
         let scanner = handler()?;
@@ -172,18 +170,40 @@ impl BleChannel {
             scan,
             timeout_at(
                 deadline,
-                scanner.system_connected_devices(service.unwrap_or(SERVICE_UUID))
+                tauri_plugin_system_ble::connected_devices(
+                    app.clone(),
+                    service.unwrap_or(SERVICE_UUID).to_string(),
+                )
             )
         );
         scan?;
-        let mut system_addresses = HashSet::new();
+        let mut devices: HashMap<_, _> = devices
+            .into_iter()
+            .map(|(address, device)| {
+                (
+                    address,
+                    DeviceInfo {
+                        name: device.name,
+                        address: device.address,
+                        rssi: device.rssi,
+                        system_connected: false,
+                    },
+                )
+            })
+            .collect();
         match system_devices {
             Ok(Ok(system_devices)) => {
                 for device in system_devices {
-                    system_addresses.insert(device.address.clone());
-                    let existing = devices
-                        .entry(device.address.clone())
-                        .or_insert_with(|| device.clone());
+                    let existing =
+                        devices
+                            .entry(device.address.clone())
+                            .or_insert_with(|| DeviceInfo {
+                                name: device.name.clone(),
+                                address: device.address.clone(),
+                                rssi: None,
+                                system_connected: true,
+                            });
+                    existing.system_connected = true;
                     if existing.name.trim().is_empty() || existing.name == existing.address {
                         existing.name = device.name;
                     }
@@ -207,19 +227,9 @@ impl BleChannel {
 
         Ok(devices
             .into_iter()
-            .filter_map(|device| {
-                let system_connected = system_addresses.contains(&device.address);
-                if device.address.trim().is_empty()
-                    || (!system_connected && device.name.trim().is_empty())
-                {
-                    return None;
-                }
-                Some(DeviceInfo {
-                    name: device.name,
-                    address: device.address,
-                    rssi: device.rssi,
-                    system_connected,
-                })
+            .filter(|device| {
+                !device.address.trim().is_empty()
+                    && (device.system_connected || !device.name.trim().is_empty())
             })
             .collect())
     }
@@ -237,6 +247,8 @@ impl BleChannel {
         if timeout_ms == 0 {
             return Err(BleError::InvalidArgument("连接超时时间必须大于零"));
         }
+
+        check_permissions().await?;
 
         let (connection_state, connected) = watch::channel(true);
         let on_disconnect = OnDisconnectHandler::from_sync(move || {
@@ -787,6 +799,17 @@ pub async fn disconnect_all() -> Result<(), BleError> {
         .await
         .map_err(|_| BleError::Timeout)?
         .map_err(plugin_error)
+}
+
+async fn check_permissions() -> Result<(), BleError> {
+    if tauri_plugin_blec::check_permissions(false)
+        .await
+        .map_err(plugin_error)?
+    {
+        Ok(())
+    } else {
+        Err(BleError::Transport("缺少蓝牙扫描或连接权限".into()))
+    }
 }
 
 fn handler() -> Result<&'static tauri_plugin_blec::Handler, BleError> {

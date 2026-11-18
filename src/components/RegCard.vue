@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, reactive, watch } from "vue"
-import { formatContentValue, validateRegisterInput } from "../registers/codec"
+import { formatContentValue, parseUnit, validateRegisterInput } from "../registers/codec"
 import type { ContentDefinition, StatusItem } from "../types"
 
 const FIELD_PREVIEW_LIMIT = 2
@@ -57,7 +57,7 @@ function fieldName(content: ContentDefinition) {
 }
 
 function isEditableContent(content: ContentDefinition) {
-  return ["hex", "value", "text", "password", "datetime", "date"].includes(content.kind)
+  return ["hex", "uint", "int", "uint_le", "string", "password", "datetime", "date"].includes(content.kind)
 }
 
 function inputType(content: ContentDefinition) {
@@ -65,16 +65,15 @@ function inputType(content: ContentDefinition) {
   if (content.kind === "datetime") return "datetime-local"
   if (content.kind === "date") return "date"
   if (content.kind === "hex") return "text"
-  if (content.codec === "hex_value") return "text"
-  if (content.kind === "value") return "number"
+  if (["uint", "int", "uint_le"].includes(content.kind)) return "number"
   return "text"
 }
 
 function inputMode(content: ContentDefinition) {
+  if (content.codec === "speed_offset") return "text"
   if (content.kind === "password") return "numeric"
   if (content.kind === "hex") return "text"
-  if (content.codec === "hex_value") return "text"
-  if (content.kind === "value") return "decimal"
+  if (["uint", "int", "uint_le"].includes(content.kind)) return "decimal"
   return undefined
 }
 
@@ -210,15 +209,13 @@ function toggleExpanded() {
         <div v-else-if="card.editor.index === visibleIndex" class="rc-editor">
           <div class="rc-editor-row">
             <input :id="`${cardId}-input-${visibleIndex}`" v-model="card.editor.value" class="rc-input"
-              :type="inputType(content)" :inputmode="inputMode(content)" :min="content.min" :max="content.max" :step="content.kind === 'datetime'
-                ? 1
-                : (content.step ?? (content.kind === 'value' ? 'any' : undefined))
-                " :maxlength="content.kind === 'password' ? 6 : content.maxLength"
+              :type="inputType(content)" :inputmode="inputMode(content)" :min="content.minmax?.[0]" :max="content.minmax?.[1]"
+              :step="content.kind === 'datetime' ? 1 : 'any'" :maxlength="content.kind === 'password' ? 6 : undefined"
               :autocomplete="content.kind === 'password' ? 'new-password' : 'off'"
               :aria-label="`编辑${fieldName(content)}`" :aria-invalid="Boolean(card.editor.error)"
               :aria-describedby="card.editor.error ? `${cardId}-error-${visibleIndex}` : undefined" :disabled="disabled"
               @keyup.enter="saveEdit(visibleIndex)" @keyup.escape.stop="cancelEdit()" />
-            <span v-if="content.unit" class="rc-unit">{{ content.unit }}</span>
+            <span v-if="parseUnit(content.unit).unit" class="rc-unit">{{ parseUnit(content.unit).unit }}</span>
             <button class="rc-edit-action is-confirm" type="button" :disabled="disabled"
               :aria-label="`确认修改${fieldName(content)}`" @click="saveEdit(visibleIndex)">
               <svg viewBox="0 0 18 18" aria-hidden="true">
@@ -379,23 +376,20 @@ function toggleExpanded() {
 }
 
 .rc-fields {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13.125rem), 1fr));
   align-items: stretch;
-  flex-wrap: wrap;
   gap: 0.5rem;
   min-width: 0;
   padding: 0.5rem 0.875rem 0;
 }
 
 .rc-card.is-compact .rc-fields {
-  flex-direction: column;
-  gap: 0;
   padding-top: 0.375rem;
 }
 
 .rc-field {
   display: flex;
-  flex: 1 1 13.125rem;
   flex-direction: column;
   justify-content: center;
   gap: 0.25rem;
@@ -405,8 +399,11 @@ function toggleExpanded() {
 }
 
 .rc-card.is-compact .rc-field {
-  flex: 0 0 auto;
   min-height: 0;
+}
+
+.rc-field.is-editing {
+  grid-column: 1 / -1;
 }
 
 .rc-field-label {
@@ -624,7 +621,7 @@ function toggleExpanded() {
 }
 
 .rc-action-error {
-  flex: 1 0 100%;
+  grid-column: 1 / -1;
   padding: 0 0 0.4375rem;
 }
 
@@ -681,10 +678,6 @@ function toggleExpanded() {
   border-bottom: 1px solid var(--border);
 }
 
-.rc-card.is-expanded .rc-field {
-  flex-basis: 13.75rem;
-}
-
 @media (max-width: 900px) {
   .rc-card {
     display: flex;
@@ -712,17 +705,12 @@ function toggleExpanded() {
   }
 
   .rc-fields {
-    flex-direction: column;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.375rem), 1fr));
   }
 
   .rc-field {
-    flex: 1 1 auto;
     min-height: 2.5rem;
     padding: 0;
-  }
-
-  .rc-field.is-editing {
-    flex-basis: 100%;
   }
 
   .rc-card.is-expanded .rc-header {
@@ -730,17 +718,8 @@ function toggleExpanded() {
     min-height: 2.75rem;
   }
 
-  .rc-card.is-expanded .rc-fields {
-    flex-direction: row;
-  }
-
   .rc-card.is-expanded .rc-field {
-    flex-basis: 9.375rem;
     min-height: 3.625rem;
-  }
-
-  .rc-card.is-expanded .rc-field.is-editing {
-    flex-basis: 100%;
   }
 
   .rc-editor-row {

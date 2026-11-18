@@ -198,7 +198,8 @@ export const useComponentStatusStore = defineStore("component-status", () => {
   }
 
   function handleTransportError(error: unknown) {
-    if (isTimeout(error)) reading.automatic = false
+    // 串口偶发超时保留自动刷新，按正常间隔重试；写操作仍不会自动重发。
+    if (isTimeout(error) && session.transport !== "serial") reading.automatic = false
     session.handleDisconnected(error)
   }
 
@@ -269,7 +270,9 @@ export const useComponentStatusStore = defineStore("component-status", () => {
       snapshot.value = parseStatusData(registerBlocks, coilBlocks, sourceCatalog)
       if (completedBlocks > 0) reading.lastAt = new Date()
       if (failures.length) {
-        const prefix = stoppedByTimeout ? "读取超时，自动刷新已停止" : "部分数据读取失败"
+        const prefix = stoppedByTimeout
+          ? reading.automatic ? "读取超时，将自动重试" : "读取超时，自动刷新已停止"
+          : "部分数据读取失败"
         reading.error = `${prefix}\n${failures.map((message) => `• ${message}`).join("\n")}`
       }
       return failures.length === 0

@@ -6,8 +6,6 @@ mod license;
 mod modbus;
 mod network;
 mod ota;
-mod ota_background;
-mod ota_notifications;
 mod serial;
 
 use std::sync::{
@@ -305,9 +303,6 @@ async fn ota_start(
                 biased;
                 _ = disconnected => Err("BLE 已断开".to_string()),
                 result = async {
-                    ota_notifications::request_permission().await;
-                    ota_background::set_active(&app, true).await?;
-                    ota_notifications::start();
                     let firmware = ota::get_bin(&path, is_ota, &app)?;
                     let bytes_per_cycle = firmware.len();
                     channel
@@ -327,10 +322,6 @@ async fn ota_start(
             }
         } => result,
     };
-    ota_notifications::finish(result.as_ref().map(|_| ()).map_err(Clone::clone)).await;
-    if let Err(error) = ota_background::set_active(&app, false).await {
-        tauri_plugin_log::log::warn!("结束 OTA 后台服务失败：{error}");
-    }
     OTA_STOP.lock().await.take();
 
     result
@@ -352,7 +343,10 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_navigation::init())
+        .plugin(tauri_plugin_app_installer::init())
+        .plugin(tauri_plugin_mobile_ui::init())
+        .plugin(tauri_plugin_system_ble::init())
         .plugin(
             tauri_plugin_log::Builder::new()
                 .level(if cfg!(debug_assertions) {
@@ -366,14 +360,6 @@ pub fn run() {
         .plugin(tauri_plugin_blec::init())
         .plugin(tauri_plugin_machine_uid::init())
         .on_window_event(|window, event| {
-            match event {
-                tauri::WindowEvent::Focused(focused) => ota_notifications::focused(*focused),
-                #[cfg(mobile)]
-                tauri::WindowEvent::Suspended => ota_notifications::focused(false),
-                #[cfg(mobile)]
-                tauri::WindowEvent::Resumed => ota_notifications::focused(true),
-                _ => {}
-            }
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                 api.prevent_close();
                 let app = window.app_handle().clone();
@@ -392,7 +378,6 @@ pub fn run() {
 
     builder
         .setup(move |app| {
-            ota_notifications::init(app.handle().clone())?;
             app.manage(LicenseState::default());
             app.manage(app_update::UpdateState::default());
             let app_handle = app.handle().clone();

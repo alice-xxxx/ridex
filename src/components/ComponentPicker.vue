@@ -29,7 +29,7 @@ const components = devices.filter((device) => device.fileName)
 
 .component-picker select {
   width: 100%;
-  min-height: 2.5rem;
+  min-height: 2.125rem;
   padding: 0.4375rem 2.125rem 0.4375rem 0.625rem;
   appearance: none;
   border: 1px solid var(--border-strong);

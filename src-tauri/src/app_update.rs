@@ -160,30 +160,7 @@ pub async fn install_app_update(
         }
         #[cfg(target_os = "android")]
         {
-            let path = path.to_string_lossy().into_owned();
-            let (sender, receiver) = tokio::sync::oneshot::channel();
-            tauri::wry::prelude::dispatch(move |env, activity, _webview| {
-                let result = (|| {
-                    let path = env.new_string(path)?;
-                    env.call_method(
-                        activity,
-                        "installAppUpdate",
-                        "(Ljava/lang/String;)Z",
-                        &[(&path).into()],
-                    )?
-                    .z()
-                })();
-                let result = match result {
-                    Ok(true) => Ok(true),
-                    Ok(false) => Err("请允许安装未知应用；也可以保存安装包后手动安装".to_string()),
-                    Err(_) => {
-                        let _ = env.exception_clear();
-                        Err("无法打开安装器，请重试".to_string())
-                    }
-                };
-                let _ = sender.send(result);
-            });
-            return receiver.await.map_err(|_| "无法打开安装器")?;
+            tauri_plugin_app_installer::install(&app, path).await
         }
         #[cfg(not(target_os = "android"))]
         {

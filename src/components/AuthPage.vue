@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useSessionStore } from "../stores/session"
 import DeviceDisconnectButton from "./DeviceDisconnectButton.vue"
-import DeviceBackButton from "./DeviceBackButton.vue"
+import SubpageHeader from "./SubpageHeader.vue"
 
 const session = useSessionStore()
 const { link, authorization } = session
@@ -10,8 +10,9 @@ const { link, authorization } = session
 <template>
   <section class="page auth-page">
     <div class="auth-context">
+      <SubpageHeader title="设备认证" back-label="返回设备搜索"
+        :disabled="link.disconnecting || link.connecting" @back="session.returnToSearch" />
       <div class="device-plate">
-        <DeviceBackButton />
         <div class="device-meta">
           <span>已连接设备</span>
           <strong>{{ link.current?.name || "未命名设备" }}</strong>

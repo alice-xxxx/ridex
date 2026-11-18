@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue"
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue"
+import { isTauri } from "@tauri-apps/api/core"
+import { platform } from "@tauri-apps/plugin-os"
+import { onBackGesture, onBackRequested, setNavigationGestures, type Unlisten } from "tauri-plugin-navigation-api"
 import { useSessionStore } from "./stores/session"
 import { errorMessage } from "./services/protocol"
 import { tauriApi } from "./services/tauri"
@@ -17,8 +20,39 @@ import type { LicenseStatus } from "./types"
 const session = useSessionStore()
 const toolMode = ref<"convert" | "4g">("convert")
 const fourGVisited = ref(false)
-const deviceNav = computed(() => session.page === "status" || session.page === "terminal")
-const showBottomNav = computed(() => deviceNav.value || session.page === "search" || session.page === "settings")
+const showBottomNav = computed(() => session.page === "search" || session.page === "settings")
+const mobilePlatform = isTauri() ? platform() : null
+const backListeners: Promise<Unlisten>[] = []
+
+function goBack() {
+  if (license.loading) return
+  if (!license.status.authorized || session.page === "search") {
+    if (mobilePlatform === "android") void tauriApi.exitApp()
+  } else if (session.page === "about" || session.page === "import-config" || session.page === "ota-tool") {
+    session.goTo("settings")
+  } else if (session.page === "settings") {
+    session.goTo("search")
+  } else if (session.page === "terminal") {
+    session.goTo("status")
+  } else if (!session.link.connecting && !session.link.disconnecting) {
+    void session.returnToSearch()
+  }
+}
+
+onMounted(() => {
+  if (mobilePlatform === "android") {
+    backListeners.push(onBackRequested(goBack))
+  } else if (mobilePlatform === "ios") {
+    backListeners.push(onBackGesture(({ phase, commit }) => {
+      if (phase === "end" && commit) goBack()
+    }))
+  }
+})
+
+onUnmounted(() => {
+  for (const listener of backListeners) void listener.then((unlisten) => unlisten())
+  if (mobilePlatform === "ios") void setNavigationGestures(false, true)
+})
 
 function goHome() {
   session.goTo("search")
@@ -33,6 +67,14 @@ const license = reactive({
   loading: true,
   status: { authorized: false, deviceId: "", message: null } as LicenseStatus,
 })
+
+if (mobilePlatform === "ios") {
+  watch(
+    () => !license.status.authorized || session.page === "search",
+    (disabled) => { void setNavigationGestures(!disabled, true) },
+    { immediate: true },
+  )
+}
 
 const sleep = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms))
 
@@ -82,7 +124,7 @@ onMounted(async () => {
   </main>
   <LicenseBlockedPage v-else-if="!license.status.authorized" :device-id="license.status.deviceId"
     :message="license.status.message" />
-  <div v-else class="app" :class="{ 'app-terminal': session.page === 'terminal', 'app-detail': !showBottomNav }">
+  <div v-else class="app" :class="{ 'app-terminal': session.page === 'terminal', 'app-status': session.page === 'status', 'app-detail': !showBottomNav }">
     <main class="main">
       <div v-if="session.link.current && session.link.connectError" class="msg msg-error" role="alert">
         {{ session.link.connectError }}
@@ -101,43 +143,22 @@ onMounted(async () => {
       </Transition>
     </main>
 
-    <nav v-if="showBottomNav" class="bottom-nav" :aria-label="deviceNav ? '设备导航' : '主导航'">
-      <template v-if="deviceNav">
-        <button type="button" class="bottom-nav-item" :class="{ active: session.page === 'status' }"
-          :aria-current="session.page === 'status' ? 'page' : undefined" @click="session.goTo('status')">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-            <rect x="3" y="3" width="7" height="7" rx="1.5" />
-            <rect x="14" y="3" width="7" height="7" rx="1.5" />
-            <rect x="3" y="14" width="7" height="7" rx="1.5" />
-            <rect x="14" y="14" width="7" height="7" rx="1.5" />
-          </svg>
-          <span>状态</span>
-        </button>
-        <button type="button" class="bottom-nav-item" :class="{ active: session.page === 'terminal' }"
-          :aria-current="session.page === 'terminal' ? 'page' : undefined" @click="session.goTo('terminal')">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-          </svg>
-          <span>通信</span>
-        </button>
-      </template>
-      <template v-else>
-        <button type="button" class="bottom-nav-item" :class="{ active: session.page === 'search' }"
-          :aria-current="session.page === 'search' ? 'page' : undefined" @click="goHome">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" />
-          </svg>
-          <span>主页</span>
-        </button>
-        <button type="button" class="bottom-nav-item" :class="{ active: session.page === 'settings' }"
-          :aria-current="session.page === 'settings' ? 'page' : undefined" @click="session.goTo('settings')">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-            <circle cx="12" cy="12" r="3" />
-            <path d="m10 2-.5 2.3-2.1.9-2-1.3-2.5 2.5 1.3 2-.9 2.1L1 11v2l2.3.5.9 2.1-1.3 2 2.5 2.5 2-1.3 2.1.9L10 22h4l.5-2.3 2.1-.9 2 1.3 2.5-2.5-1.3-2 .9-2.1L23 13v-2l-2.3-.5-.9-2.1 1.3-2-2.5-2.5-2 1.3-2.1-.9L14 2z" />
-          </svg>
-          <span>设置</span>
-        </button>
-      </template>
+    <nav v-if="showBottomNav" class="bottom-nav" aria-label="主导航">
+      <button type="button" class="bottom-nav-item" :class="{ active: session.page === 'search' }"
+        :aria-current="session.page === 'search' ? 'page' : undefined" @click="goHome">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" />
+        </svg>
+        <span>主页</span>
+      </button>
+      <button type="button" class="bottom-nav-item" :class="{ active: session.page === 'settings' }"
+        :aria-current="session.page === 'settings' ? 'page' : undefined" @click="session.goTo('settings')">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="3" />
+          <path d="m10 2-.5 2.3-2.1.9-2-1.3-2.5 2.5 1.3 2-.9 2.1L1 11v2l2.3.5.9 2.1-1.3 2 2.5 2.5 2-1.3 2.1.9L10 22h4l.5-2.3 2.1-.9 2 1.3 2.5-2.5-1.3-2 .9-2.1L23 13v-2l-2.3-.5-.9-2.1 1.3-2-2.5-2.5-2 1.3-2.1-.9L14 2z" />
+        </svg>
+        <span>设置</span>
+      </button>
     </nav>
   </div>
 </template>
@@ -183,6 +204,11 @@ onMounted(async () => {
   padding-top: env(safe-area-inset-top);
 }
 
+.app-status {
+  height: 100dvh;
+  overflow: hidden;
+}
+
 .main {
   flex: 1;
   display: flex;
@@ -193,6 +219,12 @@ onMounted(async () => {
 
 .app-detail .main {
   padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
+.app-status .main {
+  min-height: 0;
+  padding-bottom: 0;
+  overflow: hidden;
 }
 
 .bottom-nav {
@@ -227,6 +259,11 @@ onMounted(async () => {
 }
 
 @media (max-width: 767px) {
+  .app-status .main {
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+  }
+
   .app-terminal {
     height: 100vh;
     height: 100dvh;
@@ -234,7 +271,10 @@ onMounted(async () => {
 
   .app-terminal .main {
     min-height: 0;
-    overflow-y: auto;
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    overflow: hidden;
   }
 }
 

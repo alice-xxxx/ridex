@@ -13,12 +13,12 @@ use std::{
         Arc,
     },
     thread::{self, JoinHandle},
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 use crossbeam_queue::ArrayQueue;
 use ringbuf::{traits::*, HeapRb};
-use tauri::{AppHandle, Manager, Wry};
+use tauri::{AppHandle, Emitter, Manager, Wry};
 use tauri_plugin_serialplugin::{
     api::SerialPort,
     state::{ClearBuffer, DataBits, FlowControl, Parity, StopBits},
@@ -135,17 +135,21 @@ impl SerialChannel {
             receiver_thread: None,
             frame_ring: Arc::new(ArrayQueue::new(FRAME_RING_CAPACITY)),
         };
-        channel.start_receiver_thread(port);
+        channel.start_receiver_thread(port, baud_rate);
         Ok(channel)
     }
 
     /// 停止接收线程并关闭串口。
     pub async fn disconnect(&mut self) -> Result<(), SerialError> {
-        self.stop_receiver_thread();
-
+        self.receiver_stop.store(true, Ordering::Release);
+        let receiver = self.receiver_thread.take();
         let port = self.app.state::<SerialPort<Wry>>().inner().clone();
         let path = self.path.clone();
         tauri::async_runtime::spawn_blocking(move || {
+            let _ = port.cancel_read(path.clone());
+            if let Some(receiver) = receiver {
+                let _ = receiver.join();
+            }
             port.close(path)
                 .map_err(|error| SerialError::Disconnected(error.to_string()))
         })
@@ -163,11 +167,19 @@ impl SerialChannel {
         if timeout_ms == 0 {
             return Err(SerialError::InvalidArgument("Modbus 超时时间必须大于零"));
         }
+        if self.receiver_stop.load(Ordering::Acquire) {
+            return Err(SerialError::Disconnected("接收线程已停止".to_string()));
+        }
 
         let request_frame = modbus::assembly_frame(request.clone())?;
+        let deadline = Instant::now() + Duration::from_millis(timeout_ms);
 
         // 串口写入前直接消费队列中的旧完整帧，避免本次请求误取旧响应。
-        while self.frame_ring.pop().is_some() {}
+        for _ in 0..FRAME_RING_CAPACITY {
+            if self.frame_ring.pop().is_none() {
+                break;
+            }
+        }
 
         let port = self.app.state::<SerialPort<Wry>>().inner().clone();
         let path = self.path.clone();
@@ -179,10 +191,18 @@ impl SerialChannel {
         .await
         .map_err(|error| SerialError::Internal(error.to_string()))??;
 
-        let deadline = std::time::Instant::now() + Duration::from_millis(timeout_ms);
         let response = loop {
+            if self.receiver_stop.load(Ordering::Acquire) {
+                return Err(SerialError::Disconnected("接收线程已停止".to_string()));
+            }
+            if Instant::now() >= deadline {
+                return Err(SerialError::Timeout);
+            }
             if let Some(frame) = self.frame_ring.pop() {
-                break frame;
+                if modbus::matches_response(&request_frame, &frame) {
+                    break frame;
+                }
+                continue;
             }
 
             let Some(remaining) = deadline.checked_duration_since(std::time::Instant::now()) else {
@@ -203,21 +223,16 @@ impl SerialChannel {
         })
     }
 
-    fn start_receiver_thread(&mut self, port: SerialPort<Wry>) {
+    fn start_receiver_thread(&mut self, port: SerialPort<Wry>, baud_rate: u32) {
         self.receiver_stop.store(false, Ordering::Release);
         let path = self.path.clone();
         let stop = Arc::clone(&self.receiver_stop);
         let frame_ring = Arc::clone(&self.frame_ring);
+        let app = self.app.clone();
+        let frame_gap = Duration::from_millis(40_000_u64.div_ceil(u64::from(baud_rate)).max(100));
         self.receiver_thread = Some(thread::spawn(move || {
-            receiver_thread(port, path, stop, frame_ring);
+            receiver_thread(port, path, stop, frame_ring, app, frame_gap);
         }));
-    }
-
-    fn stop_receiver_thread(&mut self) {
-        self.receiver_stop.store(true, Ordering::Release);
-        if let Some(thread) = self.receiver_thread.take() {
-            let _ = thread.join();
-        }
     }
 }
 
@@ -227,10 +242,22 @@ fn receiver_thread(
     path: String,
     stop: Arc<AtomicBool>,
     frame_ring: Arc<ArrayQueue<Vec<u8>>>,
+    app: AppHandle,
+    frame_gap: Duration,
 ) {
     let mut byte_ring = HeapRb::<u8>::new(BYTE_RING_CAPACITY);
+    let mut last_byte_at = Instant::now();
 
     while !stop.load(Ordering::Acquire) {
+        if last_byte_at.elapsed() >= frame_gap {
+            // 跳过过期半帧，捕获被它挡住的完整帧。
+            while byte_ring.occupied_len() > 0 {
+                byte_ring.skip(1);
+                while let Some(frame) = modbus::buffer_get_frame(&mut byte_ring) {
+                    let _ = frame_ring.force_push(frame);
+                }
+            }
+        }
         let data = match port.read_binary(path.clone(), Some(READ_POLL_MS), Some(READ_CHUNK_SIZE)) {
             Ok(data) => data,
             Err(error) => {
@@ -239,11 +266,18 @@ fn receiver_thread(
                     continue;
                 }
                 tauri_plugin_log::log::error!("[SER][RX] port={path} read failed: {message}");
+                if !stop.swap(true, Ordering::AcqRel) {
+                    let _ = app.emit(
+                        "connection-closed",
+                        serde_json::json!({ "transport": "serial", "reason": format!("串口已断开：{message}") }),
+                    );
+                }
                 break;
             }
         };
 
         if !data.is_empty() {
+            last_byte_at = Instant::now();
             byte_ring.push_slice_overwrite(&data);
             while let Some(frame) = modbus::buffer_get_frame(&mut byte_ring) {
                 let _ = frame_ring.force_push(frame);

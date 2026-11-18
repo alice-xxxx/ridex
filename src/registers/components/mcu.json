@@ -647,11 +647,9 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
-                    "unit": "V",
-                    "scale": 0.1,
-                    "precision": 1
+                    "unit": "0.1V"
                 }
             ]
         },
@@ -662,11 +660,9 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
-                    "unit": "A",
-                    "scale": 0.1,
-                    "precision": 1
+                    "unit": "0.1A"
                 }
             ]
         },
@@ -677,7 +673,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "没有单位"
                 }
@@ -690,7 +686,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "℃"
                 }
@@ -703,7 +699,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "Km/h"
                 }
@@ -716,7 +712,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "Km"
                 }
@@ -729,7 +725,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "Km"
                 }
@@ -742,7 +738,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "V"
                 }
@@ -755,8 +751,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
-                    "codec": "version_2byte",
+                    "kind": "version",
                     "value": null
                 }
             ]
@@ -768,8 +763,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
-                    "codec": "version_2byte",
+                    "kind": "version",
                     "value": null
                 }
             ]
@@ -781,7 +775,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "text",
+                    "kind": "string",
                     "value": null
                 }
             ]
@@ -840,11 +834,9 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
-                    "unit": "V",
-                    "scale": 0.1,
-                    "precision": 1
+                    "unit": "0.1V"
                 }
             ]
         },
@@ -855,7 +847,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -868,7 +860,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -881,7 +873,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -894,7 +886,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -907,7 +899,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -920,7 +912,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -933,7 +925,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -946,7 +938,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -959,7 +951,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -972,7 +964,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -985,7 +977,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -998,7 +990,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "℃"
                 }
@@ -1011,7 +1003,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "℃"
                 }
@@ -1024,7 +1016,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "V"
                 }
@@ -1037,7 +1029,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -1050,7 +1042,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -1063,7 +1055,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -1076,7 +1068,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -1089,7 +1081,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -1102,7 +1094,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -1115,7 +1107,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -1128,7 +1120,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "毫米"
                 }
@@ -1141,7 +1133,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "1"
                 }
@@ -1154,7 +1146,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "秒"
                 }
@@ -1167,7 +1159,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "bits": [
                         [
                             72,
@@ -1179,7 +1171,7 @@
                     "value": null
                 },
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "bits": [
                         [
                             64,
@@ -1191,7 +1183,7 @@
                     "value": null
                 },
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "bits": [
                         [
                             56,
@@ -1203,7 +1195,7 @@
                     "value": null
                 },
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "bits": [
                         [
                             48,
@@ -1215,7 +1207,7 @@
                     "value": null
                 },
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "bits": [
                         [
                             40,
@@ -1227,7 +1219,7 @@
                     "value": null
                 },
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "bits": [
                         [
                             32,
@@ -1239,7 +1231,7 @@
                     "value": null
                 },
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "bits": [
                         [
                             24,
@@ -1251,7 +1243,7 @@
                     "value": null
                 },
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "bits": [
                         [
                             16,
@@ -1263,7 +1255,7 @@
                     "value": null
                 },
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "bits": [
                         [
                             8,
@@ -1275,7 +1267,7 @@
                     "value": null
                 },
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "bits": [
                         [
                             0,
@@ -1295,7 +1287,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -1342,11 +1334,9 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
-                    "scale": 0.1,
-                    "precision": 1,
-                    "unit": "V"
+                    "unit": "0.1V"
                 }
             ]
         },
@@ -1357,11 +1347,9 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
-                    "scale": 0.01,
-                    "precision": 2,
-                    "unit": "Ah"
+                    "unit": "0.01Ah"
                 }
             ]
         },
@@ -1372,7 +1360,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -1384,11 +1372,9 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
-                    "scale": 0.1,
-                    "precision": 1,
-                    "unit": "A"
+                    "unit": "0.1A"
                 }
             ]
         },
@@ -1399,11 +1385,9 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
-                    "scale": 0.1,
-                    "precision": 1,
-                    "unit": "A"
+                    "unit": "0.1A"
                 }
             ]
         },
@@ -1414,7 +1398,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%"
                 }
@@ -1427,11 +1411,10 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null,
                     "unit": "%",
-                    "min": 10,
-                    "max": 100
+                    "minmax": [10, 100]
                 }
             ]
         },

@@ -1,29 +1,20 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from "vue"
+import { reactive, ref, watch } from "vue"
 import { useTerminalStore } from "../stores/terminal"
 import { useSessionStore } from "../stores/session"
 import DeviceAddressPicker from "./DeviceAddressPicker.vue"
-import DeviceBackButton from "./DeviceBackButton.vue"
+import RoundBackButton from "./RoundBackButton.vue"
 
 const terminal = useTerminalStore()
 const session = useSessionStore()
 const { protocol, ota } = terminal
+const createForm = () => ({ device: 2, start: 0, count: 1, valuesText: "" })
 const form = reactive({
-  registers: {
-    device: 2,
-    start: 0,
-    count: 1,
-    valuesText: "",
-  },
-  coils: {
-    device: 2,
-    start: 0,
-    count: 1,
-    valuesText: "",
-  },
+  registers: { read: createForm(), write: createForm() },
+  coils: { read: createForm(), write: createForm() },
 })
 
-const activeTab = ref(ota.active || ota.result ? "ota" : "registers-read")
+const activeTab = ref(ota.active || ota.result ? "ota" : "registers")
 
 const operations = [
   {
@@ -31,8 +22,8 @@ const operations = [
     label: "寄存器",
     readCode: "03",
     writeCode: "06 / 16",
-    valueLabel: "写入值",
-    placeholder: "100 0xC8 300",
+    valueLabel: "写入值（空格分隔，每项一个寄存器）",
+    placeholder: "65535 0x0000",
   },
   {
     key: "coils",
@@ -44,29 +35,18 @@ const operations = [
   },
 ] as const
 
-const activeOperation = computed(() =>
-  operations.find((operation) => activeTab.value.startsWith(operation.key)),
+const operationModes = operations.flatMap((operation) =>
+  (["read", "write"] as const).map((mode) => ({ operation, mode, key: `${operation.key}-${mode}` })),
 )
-const activeMode = computed<"read" | "write">(() => activeTab.value.endsWith("write") ? "write" : "read")
 
-const tabs = [
-  { key: "registers-read", label: "寄存器读" },
-  { key: "registers-write", label: "寄存器写" },
-  { key: "coils-read", label: "线圈读" },
-  { key: "coils-write", label: "线圈写" },
-  { key: "ota", label: "固件更新" },
-]
 const resultIcons = { success: "✓", warn: "!", error: "×" }
-const visibleTabs = computed(() =>
-  !session.supportsOta ? tabs.filter((tab) => tab.key !== "ota") : tabs,
-)
 
 watch(() => session.supportsOta, (supported) => {
-  if (!supported && activeTab.value === "ota") activeTab.value = "registers-read"
+  if (!supported && activeTab.value === "ota") activeTab.value = "registers"
 })
 
 function sendOperation(kind: "registers" | "coils", mode: "read" | "write") {
-  const { device, start, count, valuesText } = form[kind]
+  const { device, start, count, valuesText } = form[kind][mode]
   if (mode === "read") {
     const request = { device, start, count }
     return kind === "registers" ? terminal.readRegisters(request) : terminal.readCoils(request)
@@ -89,192 +69,213 @@ const duration = (seconds: number) =>
   <section class="page comm-page" :class="{ 'comm-page-fill': activeTab !== 'ota' }">
     <div class="cp-workspace">
       <nav class="cp-modes" aria-label="通信操作">
-        <DeviceBackButton />
-        <button v-for="tab in visibleTabs" :key="tab.key" type="button" class="cp-mode"
-          :class="{ active: activeTab === tab.key }" @click="activeTab = tab.key">
-          <strong>{{ tab.label }}</strong>
+        <RoundBackButton label="返回状态" @back="session.goTo('status')" />
+        <button type="button" class="cp-comm-link" :class="{ active: activeTab !== 'ota' }"
+          :aria-pressed="activeTab !== 'ota'" @click="activeTab = 'registers'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 4h14v12H9l-4 4V4Z" />
+            <path d="M9 8h6m-6 4h4" />
+          </svg>
+          <span>通信</span>
+        </button>
+        <div class="cp-operations" aria-label="操作对象">
+          <button type="button" :class="{ active: activeTab === 'registers' }"
+            @click="activeTab = 'registers'">寄存器</button>
+          <button type="button" :class="{ active: activeTab === 'coils' }" @click="activeTab = 'coils'">线圈</button>
+        </div>
+        <button v-if="session.supportsOta" type="button" class="cp-ota-link" :class="{ active: activeTab === 'ota' }"
+          :aria-pressed="activeTab === 'ota'" aria-label="固件更新" title="固件更新" @click="activeTab = 'ota'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12m-4-4 4 4 4-4M5 17v3h14v-3" />
+          </svg>
+          <span>固件更新</span>
         </button>
       </nav>
 
-      <main class="cp-canvas">
-        <div class="cp-panel">
-          <div v-if="activeOperation" class="cp-section">
-            <div class="cp-block">
-              <div class="cp-block-head">
-                <span class="cp-block-title">{{ activeOperation.label }}</span>
-                <span class="cp-fc">{{ activeMode === "read" ? activeOperation.readCode : activeOperation.writeCode }}</span>
-              </div>
-              <div class="cp-fields">
-                <div class="cp-field">
-                  <label>装置地址</label>
-                  <DeviceAddressPicker v-model="form[activeOperation.key].device"
-                    :label="`${activeOperation.label}装置地址`" />
+      <div class="cp-content">
+        <main class="cp-canvas">
+          <div class="cp-panel">
+            <div v-if="activeTab !== 'ota'" class="cp-section cp-operation-grid">
+              <div v-for="{ operation, mode, key } in operationModes" :key="key" class="cp-block cp-operation"
+                :class="{ 'is-selected': activeTab === operation.key }">
+                <div class="cp-block-head">
+                  <span class="cp-block-title">{{ operation.label }}{{ mode === 'read' ? '读取' : '写入' }}</span>
+                  <span class="cp-fc">{{ mode === "read" ? operation.readCode : operation.writeCode }}</span>
                 </div>
-                <div class="cp-field">
-                  <label>起始地址</label>
-                  <input v-model.number="form[activeOperation.key].start" type="number" min="0" max="65535"
-                    class="input input-sm" />
-                </div>
-                <div v-if="activeMode === 'read'" class="cp-field">
-                  <label>数量</label>
-                  <input v-model.number="form[activeOperation.key].count" type="number" min="1"
-                    class="input input-sm" />
-                </div>
-                <div v-else class="cp-field cp-field-wide">
-                  <label>{{ activeOperation.valueLabel }}</label>
-                  <input v-model="form[activeOperation.key].valuesText" :placeholder="activeOperation.placeholder"
-                    class="input input-sm input-mono" />
-                </div>
-              </div>
-              <div class="cp-action cp-operation-action">
-                <button class="btn btn-primary" :disabled="protocol.writing"
-                  @click="sendOperation(activeOperation.key, activeMode)">
-                  {{ activeMode === "read" ? "读取" : "写入" }} →
-                </button>
-              </div>
-              <div v-if="protocol[activeOperation.key][activeMode].error" class="msg msg-error">
-                {{ protocol[activeOperation.key][activeMode].error }}
-              </div>
-            </div>
-          </div>
-
-          <div v-show="activeTab === 'ota'" class="cp-section">
-            <div class="cp-block cp-ota">
-              <div class="cp-file-area" :class="{ selected: ota.fileName }">
-                <div class="cp-file-info">
-                  <strong>{{ ota.fileName }}</strong>
-                </div>
-                <button class="btn btn-sm btn-outline" :disabled="ota.active" @click="terminal.selectFirmware">
-                  {{ ota.fileName ? "更换文件" : "选择文件" }}
-                </button>
-              </div>
-
-              <div class="cp-config-title">
-                <span>更新参数</span><small v-if="ota.fileKind === 'packaged'">已填充，可修改</small>
-              </div>
-              <div class="cp-fields">
-                <div class="cp-field">
-                  <label>装置地址</label>
-                  <DeviceAddressPicker v-model="ota.device" label="OTA 装置地址" />
-                </div>
-                <div class="cp-field">
-                  <label>厂家编码</label>
-                  <input v-model="ota.manufacturer" placeholder="00003339" class="input input-sm input-mono" />
-                </div>
-                <div class="cp-field">
-                  <label>更新次数</label>
-                  <input v-model.number="ota.cycles" type="number" min="1" max="100" step="1" class="input input-sm"
-                    :disabled="ota.active" />
-                </div>
-              </div>
-              <div class="cp-fields">
-                <div class="cp-field">
-                  <label>硬件版本</label>
-                  <input v-model="ota.hardwareVersion" placeholder="0102" class="input input-sm input-mono" />
-                </div>
-                <div class="cp-field">
-                  <label>软件版本</label>
-                  <input v-model="ota.softwareVersion" placeholder="0304" class="input input-sm input-mono" />
-                </div>
-              </div>
-              <label v-if="session.transport === 'ble'" class="cp-fast-mode">
-                <input v-model="ota.fastMode" type="checkbox" role="switch" :disabled="ota.active" />
-                快速模式
-              </label>
-              <dl v-if="ota.info" class="ota-meta">
-                <div>
-                  <dt>产品类型</dt>
-                  <dd>{{ bytesHex(ota.info.deviceType) }}</dd>
-                </div>
-                <div v-if="ota.info.description">
-                  <dt>文件描述</dt>
-                  <dd>{{ ota.info.description }}</dd>
-                </div>
-                <div>
-                  <dt>升级内容</dt>
-                  <dd>{{ fileSize(ota.info.upgradeSize) }}</dd>
-                </div>
-                <div>
-                  <dt>Upgrade CRC</dt>
-                  <dd>{{ crcHex(ota.info.upgradeCrc) }}</dd>
-                </div>
-                <div>
-                  <dt>File CRC</dt>
-                  <dd>{{ crcHex(ota.info.fileCrc) }}</dd>
-                </div>
-              </dl>
-
-              <div v-if="ota.active" class="cp-progress">
-                <div class="cp-progress-head">
-                  <div class="cp-progress-status">
-                    <i></i>
-                    <span><small>正在更新</small><strong>{{ ota.progress }}%</strong></span>
+                <div class="cp-fields">
+                  <div class="cp-field">
+                    <label>装置地址</label>
+                    <DeviceAddressPicker v-model="form[operation.key][mode].device"
+                      :label="`${operation.label}${mode === 'read' ? '读取' : '写入'}装置地址`" />
                   </div>
-                  <div class="cp-timer">
-                    <small>已用时间</small>
-                    <time>{{ duration(ota.elapsedSeconds) }}</time>
+                  <div class="cp-field">
+                    <label>起始地址</label>
+                    <input v-model.number="form[operation.key][mode].start" type="number" min="0" max="65535"
+                      class="input input-sm" />
                   </div>
-                  <strong class="cp-progress-pct">{{ ota.progress }}<small>%</small></strong>
+                  <div v-if="mode === 'read'" class="cp-field">
+                    <label>数量</label>
+                    <input v-model.number="form[operation.key][mode].count" type="number" min="1"
+                      class="input input-sm" />
+                  </div>
+                  <div v-else class="cp-field cp-field-wide">
+                    <label>{{ operation.valueLabel }}</label>
+                    <input v-model="form[operation.key][mode].valuesText" :placeholder="operation.placeholder"
+                      class="input input-sm input-mono" />
+                  </div>
                 </div>
-                <div class="cp-progress-track">
-                  <div class="cp-progress-fill" :style="{ width: ota.progress + '%' }"></div>
+                <div class="cp-action cp-operation-action">
+                  <button class="btn btn-primary" :disabled="protocol.writing"
+                    @click="sendOperation(operation.key, mode)">
+                    {{ mode === "read" ? "读取" : "写入" }} →
+                  </button>
+                </div>
+                <div v-if="protocol[operation.key][mode].error" class="msg msg-error">
+                  {{ protocol[operation.key][mode].error }}
                 </div>
               </div>
+            </div>
 
-              <div class="cp-action cp-ota-action">
-                <span>{{
-                  ota.fileName
-                    ? `${ota.cycles} 次更新，每次间隔 2 秒`
-                    : "选择固件后才能开始"
-                }}</span>
-                <button v-if="!ota.active" class="btn btn-primary" :disabled="!ota.fileName || protocol.writing"
-                  @click="terminal.startOta">
-                  开始更新 →
-                </button>
-                <button v-else class="btn btn-danger" :disabled="ota.cancelling" @click="terminal.cancelOta">
-                  {{ ota.cancelling ? "正在终止…" : "终止更新" }}
-                </button>
+            <div v-show="activeTab === 'ota'" class="cp-section">
+              <div class="cp-block cp-ota">
+                <div class="cp-file-area" :class="{ selected: ota.fileName }">
+                  <div class="cp-file-info">
+                    <strong>{{ ota.fileName }}</strong>
+                  </div>
+                  <button class="btn btn-sm btn-outline" :disabled="ota.active" @click="terminal.selectFirmware">
+                    {{ ota.fileName ? "更换文件" : "选择文件" }}
+                  </button>
+                </div>
+
+                <div class="cp-config-title">
+                  <span>更新参数</span><small v-if="ota.fileKind === 'packaged'">已填充，可修改</small>
+                </div>
+                <div class="cp-fields">
+                  <div class="cp-field">
+                    <label>装置地址</label>
+                    <DeviceAddressPicker v-model="ota.device" label="OTA 装置地址" />
+                  </div>
+                  <div class="cp-field">
+                    <label>厂家编码</label>
+                    <input v-model="ota.manufacturer" placeholder="00003339" class="input input-sm input-mono" />
+                  </div>
+                  <div class="cp-field">
+                    <label>更新次数</label>
+                    <input v-model.number="ota.cycles" type="number" min="1" max="100" step="1" class="input input-sm"
+                      :disabled="ota.active" />
+                  </div>
+                </div>
+                <div class="cp-fields">
+                  <div class="cp-field">
+                    <label>硬件版本</label>
+                    <input v-model="ota.hardwareVersion" placeholder="0102" class="input input-sm input-mono" />
+                  </div>
+                  <div class="cp-field">
+                    <label>软件版本</label>
+                    <input v-model="ota.softwareVersion" placeholder="0304" class="input input-sm input-mono" />
+                  </div>
+                </div>
+                <label v-if="session.transport === 'ble'" class="cp-fast-mode">
+                  <input v-model="ota.fastMode" type="checkbox" role="switch" :disabled="ota.active" />
+                  快速模式
+                </label>
+                <dl v-if="ota.info" class="ota-meta">
+                  <div>
+                    <dt>产品类型</dt>
+                    <dd>{{ bytesHex(ota.info.deviceType) }}</dd>
+                  </div>
+                  <div v-if="ota.info.description">
+                    <dt>文件描述</dt>
+                    <dd>{{ ota.info.description }}</dd>
+                  </div>
+                  <div>
+                    <dt>升级内容</dt>
+                    <dd>{{ fileSize(ota.info.upgradeSize) }}</dd>
+                  </div>
+                  <div>
+                    <dt>Upgrade CRC</dt>
+                    <dd>{{ crcHex(ota.info.upgradeCrc) }}</dd>
+                  </div>
+                  <div>
+                    <dt>File CRC</dt>
+                    <dd>{{ crcHex(ota.info.fileCrc) }}</dd>
+                  </div>
+                </dl>
+
+                <div v-if="ota.active" class="cp-progress">
+                  <div class="cp-progress-head">
+                    <div class="cp-progress-status">
+                      <i></i>
+                      <span><small>正在更新</small><strong>{{ ota.progress }}%</strong></span>
+                    </div>
+                    <div class="cp-timer">
+                      <small>已用时间</small>
+                      <time>{{ duration(ota.elapsedSeconds) }}</time>
+                    </div>
+                    <strong class="cp-progress-pct">{{ ota.progress }}<small>%</small></strong>
+                  </div>
+                  <div class="cp-progress-track">
+                    <div class="cp-progress-fill" :style="{ width: ota.progress + '%' }"></div>
+                  </div>
+                </div>
+
+                <div class="cp-action cp-ota-action">
+                  <span>{{
+                    ota.fileName
+                      ? `${ota.cycles} 次更新，每次间隔 2 秒`
+                      : "选择固件后才能开始"
+                  }}</span>
+                  <button v-if="!ota.active" class="btn btn-primary" :disabled="!ota.fileName || protocol.writing"
+                    @click="terminal.startOta">
+                    开始更新 →
+                  </button>
+                  <button v-else class="btn btn-danger" :disabled="ota.cancelling" @click="terminal.cancelOta">
+                    {{ ota.cancelling ? "正在终止…" : "终止更新" }}
+                  </button>
+                </div>
+                <div v-if="ota.result" class="cp-result" :class="`cp-result-${ota.result.type}`">
+                  <span class="cp-result-mark">{{ resultIcons[ota.result.type] }}</span>
+                  <span class="cp-result-copy"><small>更新结果</small><strong>{{ ota.result.message }}</strong></span>
+                  <span class="cp-result-time"><small>总用时</small><time>{{ duration(ota.elapsedSeconds) }}</time></span>
+                </div>
+                <div v-if="ota.error && !ota.result" class="msg msg-error">{{ ota.error }}</div>
               </div>
-              <div v-if="ota.result" class="cp-result" :class="`cp-result-${ota.result.type}`">
-                <span class="cp-result-mark">{{ resultIcons[ota.result.type] }}</span>
-                <span class="cp-result-copy"><small>更新结果</small><strong>{{ ota.result.message }}</strong></span>
-                <span class="cp-result-time"><small>总用时</small><time>{{ duration(ota.elapsedSeconds) }}</time></span>
-              </div>
-              <div v-if="ota.error && !ota.result" class="msg msg-error">{{ ota.error }}</div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
 
-      <aside v-if="activeTab !== 'ota'" class="cp-log">
-        <div class="cp-log-head">
-          <span class="cp-log-title"><i></i>通信记录 <small>{{ protocol.log.length }}</small></span>
-          <button class="btn btn-xs btn-ghost" @click="terminal.clearLog">清空</button>
-        </div>
-        <div class="cp-log-body">
-          <div v-if="!protocol.log.length" class="cp-log-empty">
-            发送指令后显示响应。
+        <aside v-if="activeTab !== 'ota'" class="cp-log">
+          <div class="cp-log-head">
+            <span class="cp-log-title"><i></i>通信记录 <small>{{ protocol.log.length }}</small></span>
+            <button class="btn btn-xs btn-ghost" @click="terminal.clearLog">清空</button>
           </div>
-          <div v-for="entry in protocol.log" :key="entry.id" class="cp-log-entry" :class="'cp-log-' + entry.type">
-            <div class="cp-log-entry-head">
-              <span class="cp-log-time">{{ entry.time }}</span>
-              <span class="cp-log-tag">{{ entry.label }}</span>
+          <div class="cp-log-body">
+            <div v-if="!protocol.log.length" class="cp-log-empty">
+              发送指令后显示响应。
             </div>
-            <div v-if="entry.error" class="cp-log-err">{{ entry.error }}</div>
-            <template v-else>
-              <div v-if="entry.request" class="cp-log-line cp-log-tx">
-                <span class="cp-log-k">TX</span><code>{{ entry.request }}</code>
+            <div v-for="entry in protocol.log" :key="entry.id" class="cp-log-entry" :class="'cp-log-' + entry.type">
+              <div class="cp-log-entry-head">
+                <span class="cp-log-time">{{ entry.time }}</span>
+                <span class="cp-log-tag">{{ entry.label }}</span>
               </div>
-              <div v-if="entry.raw" class="cp-log-line cp-log-rx">
-                <span class="cp-log-k">RX</span><code>{{ entry.raw }}</code>
-              </div>
-              <div v-if="entry.data" class="cp-log-line cp-log-data">
-                <span class="cp-log-k">DATA</span><code>{{ entry.data }}</code>
-              </div>
-            </template>
+              <div v-if="entry.error" class="cp-log-err">{{ entry.error }}</div>
+              <template v-else>
+                <div v-if="entry.request" class="cp-log-line cp-log-tx">
+                  <span class="cp-log-k">TX</span><code>{{ entry.request }}</code>
+                </div>
+                <div v-if="entry.raw" class="cp-log-line cp-log-rx">
+                  <span class="cp-log-k">RX</span><code>{{ entry.raw }}</code>
+                </div>
+                <div v-if="entry.data" class="cp-log-line cp-log-data">
+                  <span class="cp-log-k">DATA</span><code>{{ entry.data }}</code>
+                </div>
+              </template>
+            </div>
           </div>
-        </div>
-      </aside>
+        </aside>
+      </div>
     </div>
   </section>
 </template>
@@ -599,9 +600,15 @@ const duration = (seconds: number) =>
 }
 
 .cp-workspace {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  min-height: 0;
   gap: 0.75rem;
+}
+
+.cp-content {
+  min-width: 0;
 }
 
 .cp-canvas {
@@ -613,50 +620,82 @@ const duration = (seconds: number) =>
 }
 
 .cp-modes {
+  position: sticky;
+  top: 0;
+  z-index: 5;
   display: flex;
-  gap: 0.25rem;
-  padding: 0.25rem;
-  overflow-x: auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--surface) 86%, transparent);
 }
 
-.cp-mode {
-  flex: 1 0 4rem;
-  min-width: 4rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.5625rem 0.625rem;
+.cp-operations {
+  display: none;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+  padding: 0.15rem;
+  border-radius: 0.5rem;
+  background: var(--bg);
+}
+
+.cp-operations button {
+  min-width: 0;
+  height: 2.25rem;
+  padding: 0 0.25rem;
   border: 0;
-  border-radius: 0.4375rem;
-  color: var(--text-muted);
+  border-radius: 0.375rem;
+  color: var(--text-secondary);
   background: transparent;
   cursor: pointer;
-  text-align: left;
-  transition:
-    color var(--transition-fast),
-    background var(--transition-fast),
-    transform var(--transition-fast);
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
-.cp-mode:active {
-  transform: scale(0.97);
-}
-
-.cp-mode.active {
-  color: var(--text-primary);
-  background: var(--surface-hover);
+.cp-operations button.active {
+  color: var(--primary);
+  background: var(--surface);
   box-shadow: var(--shadow-sm);
 }
 
-.cp-mode strong {
-  overflow: hidden;
-  font-size: 0.7rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.cp-comm-link,
+.cp-ota-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  height: 2.5rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.5rem;
+  color: var(--text-secondary);
+  background: var(--surface-hover);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.cp-comm-link.active,
+.cp-ota-link.active {
+  border-color: var(--primary);
+  color: var(--text-inverse);
+  background: var(--primary);
+}
+
+.cp-comm-link:not(.active):hover,
+.cp-ota-link:not(.active):hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+.cp-comm-link svg,
+.cp-ota-link svg {
+  width: 1.15rem;
+  height: 1.15rem;
 }
 
 .cp-section {
@@ -922,7 +961,7 @@ const duration = (seconds: number) =>
   color: #58707b;
 }
 
-@media (min-width: 760px) {
+@media (min-width: 768px) {
   .cp-fields {
     flex-direction: row;
     flex-wrap: wrap;
@@ -937,12 +976,17 @@ const duration = (seconds: number) =>
     flex: 2;
   }
 
-  .cp-section {
+  .cp-operation-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .cp-section:has(.cp-block:only-child) {
-    grid-template-columns: 1fr;
+  .cp-operation {
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .cp-operation .cp-block-title {
+    font-size: 0.9375rem;
   }
 
   .cp-ota {
@@ -970,35 +1014,20 @@ const duration = (seconds: number) =>
 
 .comm-page-fill .cp-workspace {
   flex: 1;
-  grid-template-rows: auto minmax(0, 4fr) minmax(0, 6fr);
   min-height: 0;
 }
 
-.comm-page-fill .cp-canvas {
-  display: flex;
-  min-height: 0;
-}
-
-.comm-page-fill .cp-panel {
-  display: flex;
+.comm-page-fill .cp-content {
+  display: grid;
   flex: 1;
-  flex-direction: column;
+  grid-template-rows: auto minmax(10rem, 1fr);
   min-height: 0;
+  gap: 0.75rem;
+  overflow-y: auto;
 }
 
 .comm-page-fill .cp-section {
-  flex: 1;
-  grid-template-rows: minmax(0, 1fr);
-  min-height: 0;
   margin-top: 0;
-}
-
-.comm-page-fill .cp-section > .cp-block {
-  min-height: 0;
-}
-
-.comm-page-fill .cp-operation-action {
-  margin-top: auto;
 }
 
 .comm-page-fill .cp-log {
@@ -1020,11 +1049,6 @@ const duration = (seconds: number) =>
 }
 
 @media (max-width: 540px) {
-  .cp-mode {
-    gap: 0.3125rem;
-    padding: 0.5rem 0.3125rem;
-  }
-
   .cp-action {
     align-items: stretch;
     flex-direction: column;
@@ -1072,41 +1096,161 @@ const duration = (seconds: number) =>
 }
 
 @media (max-width: 767px) {
-  .comm-page-fill .cp-workspace {
-    grid-template-rows: auto minmax(0, 5fr) minmax(0, 5fr);
+  .comm-page {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
   }
 
-  .comm-page-fill .cp-block {
+  .cp-workspace {
+    flex: 1;
+    gap: 0.5rem;
+  }
+
+  .cp-modes {
+    display: grid;
+    flex: 0 0 auto;
+    grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+    align-items: center;
     gap: 0.25rem;
-    padding: 0.5rem;
+    padding: 0.3rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .cp-modes>button:first-child {
+    width: 2.25rem;
+    height: 2.25rem;
+    box-shadow: none;
+  }
+
+  .cp-comm-link {
+    display: none;
+  }
+
+  .comm-page-fill .cp-operation:not(.is-selected) {
+    display: none;
+  }
+
+  .cp-operations {
+    display: grid;
+  }
+
+  .cp-operations button {
+    height: 2.1rem;
+    padding: 0 0.1rem;
+    font-size: 0.84rem;
+  }
+
+  .cp-ota-link {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    margin-left: 0;
+    padding: 0;
+  }
+
+  .cp-ota-link span {
+    display: none;
+  }
+
+  .cp-content {
+    display: block;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .comm-page-fill .cp-content {
+    display: grid;
+    grid-template-rows: auto minmax(8rem, 1fr);
+    gap: 0.5rem;
+  }
+
+  .cp-operation-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+
+  .comm-page-fill .cp-operation {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.75rem;
+  }
+
+  .cp-operation .cp-block-head {
+    grid-area: 1 / 1;
+    justify-content: start;
+    gap: 0.375rem;
+  }
+
+  .cp-operation .cp-block-title {
+    font-size: 0.875rem;
+  }
+
+  .cp-operation .cp-fc {
+    padding: 0.25rem 0.375rem;
   }
 
   .comm-page-fill .cp-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
   }
 
-  .comm-page-fill .cp-field,
-  .comm-page-fill .cp-field-wide {
+  .comm-page-fill .cp-fields:has(.cp-field-wide) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .comm-page-fill .cp-field {
     min-width: 0;
-    flex: initial;
+  }
+
+  .comm-page-fill .cp-field-wide {
+    grid-column: 1 / -1;
   }
 
   .comm-page-fill .cp-operation-action {
-    align-items: flex-end;
-    flex-direction: row;
-    padding-top: 0.25rem;
+    grid-area: 1 / 2;
+    padding: 0;
+    border: 0;
   }
 
   .comm-page-fill .cp-operation-action .btn {
     width: auto;
+    min-height: 2.25rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .cp-operation>.msg {
+    grid-column: 1 / -1;
+  }
+
+  .cp-field label,
+  .cp-log-title {
+    font-size: 0.75rem;
+  }
+
+  .cp-log-empty {
+    min-height: 0;
+    color: #a9bcc3;
+    font-size: 0.78rem;
   }
 }
 
-@media (min-width: 768px) {
-  .comm-page-fill {
-    padding-bottom: var(--floating-nav-clearance);
+@media (min-width: 1440px) {
+  .cp-operation-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .cp-operation .cp-fields {
+    flex-direction: column;
   }
 }
 </style>

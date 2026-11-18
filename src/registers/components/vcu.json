@@ -40,172 +40,169 @@
       "count": 52
     }
   ],
-  "categories": {      "device_info": {
-          "name": "设备信息",
-          "registers": [
-              0,
-              1,
-              9,
-              17,
-              30,
-              31,
-              32
-          ],
-          "coils": []
-      },
-      "vehicle_config": {
-          "name": "车辆配置",
-          "registers": [
-              18,
-              19,
-              20,
-              21,
-              22,
-              23,
-              24,
-              25,
-              26,
-              27,
-              28,
-              29,
-              35,
-              401,
-              402,
-              403,
-              404,
-              405,
-              406,
-              407,
-              409,
-              410
-          ],
-          "coils": []
-      },
-      "running_status": {
-          "name": "运行状态",
-          "registers": [
-              42,
-              44,
-              45,
-              47,
-              49,
-              50,
-              51,
-              52,
-              53,
-              54,
-              55,
-              56,
-              57,
-              58,
-              59,
-              60,
-              61,
-              62,
-              63,
-              64,
-              300,
-              301,
-              302,
-              303,
-              400,
-              408,
-              413,
-              414,
-              415,
-              416
-          ],
-          "coils": []
-      },
-      "feature_switches": {
-          "name": "功能开关",
-          "registers": [
-              33,
-              34
-          ],
-          "coils": [
-              1,
-              6,
-              12,
-              13,
-              14,
-              17,
-              24,
-              25,
-              26,
-              27,
-              28,
-              29,
-              30,
-              33,
-              34,
-              36,
-              37,
-              38,
-              41,
-              51,
-              52
-          ]
-      },
-      "diagnostics": {
-          "name": "故障与诊断",
-          "registers": [
-              37,
-              41,
-              65,
-              66,
-              67,
-              68,
-              69,
-              73,
-              83,
-              85,
-              87,
-              88,
-              89,
-              90,
-              91,
-              100,
-              104,
-              105,
-              106,
-              107,
-              108,
-              109,
-              110,
-              111,
-              112,
-              114,
-              235,
-              237,
-              238,
-              239,
-              241,
-              243,
-              244,
-              246,
-              248
-          ],
-          "coils": []
-      },
-      "controls": {
-          "name": "控制操作",
-          "registers": [
-              500,
-              501,
-              502,
-              504,
-              506,
-              508
-          ],
-          "coils": [
-              8,
-              9,
-              10,
-              11,
-              50
-          ]
-      }
+  "categories": {
+    "device_info": {
+      "name": "设备信息",
+      "registers": [
+        0,
+        1,
+        9,
+        17,
+        30,
+        31,
+        32
+      ],
+      "coils": []
+    },
+    "vehicle_config": {
+      "name": "车辆配置",
+      "registers": [
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        35,
+        401,
+        402,
+        403,
+        404,
+        405,
+        406,
+        407,
+        409,
+        410
+      ],
+      "coils": []
+    },
+    "running_status": {
+      "name": "运行状态",
+      "registers": [
+        42,
+        44,
+        45,
+        47,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        62,
+        63,
+        64,
+        300,
+        301,
+        302,
+        303,
+        400,
+        408,
+        413,
+        414,
+        415,
+        416
+      ],
+      "coils": []
+    },
+    "feature_switches": {
+      "name": "功能开关",
+      "registers": [
+        33
+      ],
+      "coils": [
+        1,
+        6,
+        12,
+        13,
+        14,
+        17,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        33,
+        34,
+        36,
+        37,
+        38,
+        41,
+        51,
+        52
+      ]
+    },
+    "diagnostics": {
+      "name": "故障与诊断",
+      "registers": [
+        37,
+        41,
+        65,
+        68,
+        69,
+        73,
+        83,
+        85,
+        87,
+        88,
+        89,
+        90,
+        91,
+        100,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        114,
+        235,
+        237,
+        238,
+        239,
+        241,
+        243,
+        244,
+        246,
+        248
+      ],
+      "coils": []
+    },
+    "controls": {
+      "name": "控制操作",
+      "registers": [
+        500,
+        501,
+        502,
+        504,
+        506,
+        508
+      ],
+      "coils": [
+        8,
+        9,
+        10,
+        11,
+        50
+      ]
+    }
   },
   "registers": {
     "0": {
@@ -227,7 +224,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "text",
+          "kind": "string",
           "value": null
         }
       ]
@@ -239,7 +236,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "text",
+          "kind": "string",
           "value": null
         }
       ]
@@ -263,7 +260,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "mm",
           "value": null
         }
@@ -276,7 +273,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "value": null
         }
       ]
@@ -288,7 +285,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "%",
           "value": null
         }
@@ -491,10 +488,17 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "low_u8",
-          "min": 0,
-          "max": 255,
+          "kind": "uint",
+          "bits": [
+            [
+              0,
+              7
+            ]
+          ],
+          "minmax": [
+            0,
+            255
+          ],
           "unit": "km/h",
           "value": null
         }
@@ -507,10 +511,12 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "codec": "speed_offset",
-          "min": -99,
-          "max": 99,
+          "minmax": [
+            -99,
+            99
+          ],
           "value": null
         }
       ]
@@ -522,7 +528,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "value": null
         }
       ]
@@ -534,7 +540,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "value": null
         }
       ]
@@ -546,10 +552,17 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "low_u8",
-          "min": 0,
-          "max": 255,
+          "kind": "uint",
+          "bits": [
+            [
+              0,
+              7
+            ]
+          ],
+          "minmax": [
+            0,
+            255
+          ],
           "value": null
         }
       ]
@@ -619,30 +632,35 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "bits": [
             [
               8,
               15
             ]
           ],
-          "min": 0,
-          "max": 255,
-          "label": "格数",
+          "minmax": [
+            48,
+            255
+          ],
+          "label": "满5格电压",
+          "unit": "V",
           "value": null
         },
         {
-          "kind": "value",
+          "kind": "uint",
           "bits": [
             [
               0,
               7
             ]
           ],
-          "min": 0,
-          "max": 100,
-          "label": "百分比",
-          "unit": "%",
+          "minmax": [
+            1,
+            10
+          ],
+          "label": "每格压差",
+          "unit": "V",
           "value": null
         }
       ]
@@ -654,7 +672,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "value": null
         }
       ]
@@ -666,8 +684,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "version_2byte",
+          "kind": "version",
           "value": null
         }
       ]
@@ -679,8 +696,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "version_2byte",
+          "kind": "version",
           "value": null
         }
       ]
@@ -692,24 +708,23 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "version_2byte",
+          "kind": "version",
           "value": null
         }
       ]
     },
     "33": {
-      "bytes": 2,
+      "bytes": 4,
       "writable": true,
-      "label": "仪表功能开关1+2(高)",
+      "label": "仪表功能开关",
       "rawHex": null,
       "content": [
         {
           "kind": "switch",
           "bits": [
             [
-              0,
-              0
+              16,
+              16
             ]
           ],
           "label": "使能龙头锁检测",
@@ -721,8 +736,8 @@
           "kind": "switch",
           "bits": [
             [
-              1,
-              1
+              17,
+              17
             ]
           ],
           "label": "使能坐桶锁检测",
@@ -734,8 +749,8 @@
           "kind": "switch",
           "bits": [
             [
-              2,
-              2
+              18,
+              18
             ]
           ],
           "label": "使能坐人检测",
@@ -747,8 +762,8 @@
           "kind": "switch",
           "bits": [
             [
-              3,
-              3
+              19,
+              19
             ]
           ],
           "label": "使能离人支边撑后自动熄火",
@@ -760,8 +775,8 @@
           "kind": "select",
           "bits": [
             [
-              4,
-              5
+              20,
+              21
             ]
           ],
           "label": "单击",
@@ -789,8 +804,8 @@
           "kind": "select",
           "bits": [
             [
-              6,
-              7
+              22,
+              23
             ]
           ],
           "label": "双击",
@@ -818,8 +833,8 @@
           "kind": "select",
           "bits": [
             [
-              8,
-              9
+              24,
+              25
             ]
           ],
           "label": "长按",
@@ -847,8 +862,8 @@
           "kind": "select",
           "bits": [
             [
-              10,
-              11
+              26,
+              27
             ]
           ],
           "label": "里程显示",
@@ -876,8 +891,8 @@
           "kind": "select",
           "bits": [
             [
-              12,
-              13
+              28,
+              29
             ]
           ],
           "label": "SOC显示",
@@ -905,8 +920,8 @@
           "kind": "switch",
           "bits": [
             [
-              14,
-              14
+              30,
+              30
             ]
           ],
           "label": "刹车时允许闪灯",
@@ -918,23 +933,15 @@
           "kind": "switch",
           "bits": [
             [
-              15,
-              15
+              31,
+              31
             ]
           ],
           "label": "使能自动大灯",
           "on": "使能自动大灯",
           "off": "禁止自动大灯",
           "value": null
-        }
-      ]
-    },
-    "34": {
-      "bytes": 2,
-      "writable": true,
-      "label": "仪表功能开关2(低)",
-      "rawHex": null,
-      "content": [
+        },
         {
           "kind": "switch",
           "bits": [
@@ -1007,8 +1014,13 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "ignition_high",
+          "kind": "uint",
+          "bits": [
+            [
+              0,
+              7
+            ]
+          ],
           "value": null
         }
       ]
@@ -1020,7 +1032,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "m",
           "value": null
         }
@@ -1033,7 +1045,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "value": null
         }
       ]
@@ -1045,7 +1057,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "m",
           "value": null
         }
@@ -1058,7 +1070,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "m",
           "value": null
         }
@@ -1071,7 +1083,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "bits": [
             [
               8,
@@ -1093,7 +1105,6 @@
           "label": "点火状态",
           "on": "车辆已点火",
           "off": "车辆已熄火",
-          "note": "震动、轮动、寻车等状态的点火在此处不置1",
           "value": null
         },
         {
@@ -1107,7 +1118,6 @@
           "label": "设防状态",
           "on": "车辆已设防",
           "off": "车辆已撤防",
-          "note": "输入密码时不撤防",
           "value": null
         }
       ]
@@ -1119,10 +1129,17 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "low_u8",
-          "min": 0,
-          "max": 255,
+          "kind": "uint",
+          "bits": [
+            [
+              0,
+              7
+            ]
+          ],
+          "minmax": [
+            0,
+            255
+          ],
           "unit": "V",
           "value": null
         }
@@ -1135,10 +1152,8 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "scale": 0.01,
-          "precision": 2,
-          "unit": "V",
+          "kind": "uint",
+          "unit": "0.01V",
           "value": null
         }
       ]
@@ -1150,7 +1165,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "value": null
         }
       ]
@@ -1162,7 +1177,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "%",
           "value": null
         }
@@ -1175,10 +1190,8 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "scale": 0.01,
-          "precision": 2,
-          "unit": "Ah",
+          "kind": "uint",
+          "unit": "0.01Ah",
           "value": null
         }
       ]
@@ -1190,7 +1203,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "%",
           "value": null
         }
@@ -1203,10 +1216,8 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "scale": 0.01,
-          "precision": 2,
-          "unit": "A",
+          "kind": "uint",
+          "unit": "0.01A",
           "value": null
         }
       ]
@@ -1218,7 +1229,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "℃",
           "value": null
         }
@@ -1231,7 +1242,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "℃",
           "value": null
         }
@@ -1244,24 +1255,24 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "℃",
           "value": null
         }
       ]
     },
     "60": {
-      "bytes": 2,
+      "bytes": 4,
       "writable": false,
-      "label": "上报4G状态标志2",
+      "label": "上报4G状态标志",
       "rawHex": null,
       "content": [
         {
           "kind": "switch",
           "bits": [
             [
-              0,
-              0
+              16,
+              16
             ]
           ],
           "label": "检测到插入充电器",
@@ -1273,8 +1284,8 @@
           "kind": "switch",
           "bits": [
             [
-              1,
-              1
+              17,
+              17
             ]
           ],
           "label": "正在充电",
@@ -1286,8 +1297,8 @@
           "kind": "switch",
           "bits": [
             [
-              2,
-              2
+              18,
+              18
             ]
           ],
           "label": "丢车模式已开启",
@@ -1299,23 +1310,15 @@
           "kind": "switch",
           "bits": [
             [
-              3,
-              3
+              19,
+              19
             ]
           ],
           "label": "充电完成",
           "on": "充电完成",
           "off": "未检测到充电完成",
           "value": null
-        }
-      ]
-    },
-    "61": {
-      "bytes": 2,
-      "writable": false,
-      "label": "上报4G状态标志1",
-      "rawHex": null,
-      "content": [
+        },
         {
           "kind": "switch",
           "bits": [
@@ -1429,8 +1432,40 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "controller_aux",
+          "kind": "uint",
+          "bits": [
+            [
+              8,
+              14
+            ]
+          ],
+          "label": "车辆电量SOC",
+          "unit": "%",
+          "value": null
+        },
+        {
+          "kind": "switch",
+          "bits": [
+            [
+              15,
+              15
+            ]
+          ],
+          "label": "SOC有效标志",
+          "on": "有效",
+          "off": "无效",
+          "value": null
+        },
+        {
+          "kind": "uint",
+          "bits": [
+            [
+              0,
+              7
+            ]
+          ],
+          "label": "控制器额定电压",
+          "unit": "V",
           "value": null
         }
       ]
@@ -1442,10 +1477,8 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "scale": 0.1,
-          "precision": 1,
-          "unit": "s",
+          "kind": "uint",
+          "unit": "0.1s",
           "value": null
         }
       ]
@@ -1457,24 +1490,43 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "speed_stats",
+          "kind": "uint",
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "label": "最高时速",
+          "unit": "km/h",
+          "value": null
+        },
+        {
+          "kind": "uint",
+          "bits": [
+            [
+              0,
+              7
+            ]
+          ],
+          "label": "平均时速",
+          "unit": "km/h",
           "value": null
         }
       ]
     },
     "65": {
-      "bytes": 2,
+      "bytes": 6,
       "writable": false,
-      "label": "车辆故障码0",
+      "label": "车辆故障码",
       "rawHex": null,
       "content": [
         {
           "kind": "switch",
           "bits": [
             [
-              0,
-              0
+              32,
+              32
             ]
           ],
           "label": "控制器一线通超时",
@@ -1486,8 +1538,8 @@
           "kind": "switch",
           "bits": [
             [
-              1,
-              1
+              33,
+              33
             ]
           ],
           "label": "控制器一线通校验错误",
@@ -1499,8 +1551,8 @@
           "kind": "switch",
           "bits": [
             [
-              2,
-              2
+              34,
+              34
             ]
           ],
           "label": "电机霍尔故障",
@@ -1512,8 +1564,8 @@
           "kind": "switch",
           "bits": [
             [
-              3,
-              3
+              35,
+              35
             ]
           ],
           "label": "转把故障",
@@ -1525,8 +1577,8 @@
           "kind": "switch",
           "bits": [
             [
-              4,
-              4
+              36,
+              36
             ]
           ],
           "label": "控制器故障",
@@ -1538,8 +1590,8 @@
           "kind": "switch",
           "bits": [
             [
-              5,
-              5
+              37,
+              37
             ]
           ],
           "label": "控制器欠压保护",
@@ -1551,8 +1603,8 @@
           "kind": "switch",
           "bits": [
             [
-              6,
-              6
+              38,
+              38
             ]
           ],
           "label": "刹车故障",
@@ -1564,29 +1616,21 @@
           "kind": "switch",
           "bits": [
             [
-              7,
-              7
+              39,
+              39
             ]
           ],
           "label": "控制器485通讯错误",
           "on": "控制器485通讯错误",
           "off": "",
           "value": null
-        }
-      ]
-    },
-    "66": {
-      "bytes": 2,
-      "writable": false,
-      "label": "车辆故障码12",
-      "rawHex": null,
-      "content": [
+        },
         {
           "kind": "switch",
           "bits": [
             [
-              8,
-              8
+              24,
+              24
             ]
           ],
           "label": "控制器过压保护",
@@ -1598,8 +1642,8 @@
           "kind": "switch",
           "bits": [
             [
-              9,
-              9
+              25,
+              25
             ]
           ],
           "label": "龙头锁故障",
@@ -1611,8 +1655,8 @@
           "kind": "switch",
           "bits": [
             [
-              10,
-              10
+              26,
+              26
             ]
           ],
           "label": "保存运行数据失败",
@@ -1624,8 +1668,8 @@
           "kind": "switch",
           "bits": [
             [
-              11,
-              11
+              27,
+              27
             ]
           ],
           "label": "坐垫传感器故障",
@@ -1637,8 +1681,8 @@
           "kind": "switch",
           "bits": [
             [
-              12,
-              12
+              28,
+              28
             ]
           ],
           "label": "BT UART通讯错误",
@@ -1650,8 +1694,8 @@
           "kind": "switch",
           "bits": [
             [
-              13,
-              13
+              29,
+              29
             ]
           ],
           "label": "BMS 485通讯错误",
@@ -1663,8 +1707,8 @@
           "kind": "switch",
           "bits": [
             [
-              14,
-              14
+              30,
+              30
             ]
           ],
           "label": "ABS 485通讯错误",
@@ -1676,8 +1720,8 @@
           "kind": "switch",
           "bits": [
             [
-              15,
-              15
+              31,
+              31
             ]
           ],
           "label": "4G 485通讯错误",
@@ -1689,8 +1733,8 @@
           "kind": "switch",
           "bits": [
             [
-              0,
-              0
+              16,
+              16
             ]
           ],
           "label": "未检测到坐人",
@@ -1702,8 +1746,8 @@
           "kind": "switch",
           "bits": [
             [
-              1,
-              1
+              17,
+              17
             ]
           ],
           "label": "未收起边撑",
@@ -1715,25 +1759,13 @@
           "kind": "switch",
           "bits": [
             [
-              2,
-              2
+              18,
+              18
             ]
           ],
           "label": "ABS状态值非0",
           "on": "ABS状态值非0",
           "off": "",
-          "value": null
-        }
-      ]
-    },
-    "67": {
-      "bytes": 2,
-      "writable": false,
-      "label": "车辆故障码34",
-      "rawHex": null,
-      "content": [
-        {
-          "kind": "hex",
           "value": null
         }
       ]
@@ -1818,8 +1850,23 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "run_state",
+          "kind": "select",
+          "bits": [
+            [
+              0,
+              7
+            ]
+          ],
+          "options": [
+            {
+              "value": 0,
+              "label": "boot"
+            },
+            {
+              "value": 1,
+              "label": "APP"
+            }
+          ],
           "value": null
         }
       ]
@@ -1831,7 +1878,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "bits": [
             [
               152,
@@ -1842,7 +1889,7 @@
           "value": null
         },
         {
-          "kind": "value",
+          "kind": "uint",
           "bits": [
             [
               144,
@@ -2111,27 +2158,8 @@
           "value": null
         },
         {
-          "kind": "value",
+          "kind": "uint",
           "codec": "signed_current",
-          "magnitudeBits": [
-            [
-              104,
-              110
-            ]
-          ],
-          "signBits": [
-            [
-              111,
-              111
-            ]
-          ],
-          "multiplierBits": [
-            [
-              62,
-              62
-            ]
-          ],
-          "multiplierBase": 1,
           "bits": [
             [
               104,
@@ -2156,7 +2184,7 @@
           "value": null
         },
         {
-          "kind": "value",
+          "kind": "uint",
           "bits": [
             [
               88,
@@ -2181,7 +2209,7 @@
           "value": null
         },
         {
-          "kind": "value",
+          "kind": "uint",
           "bits": [
             [
               80,
@@ -2238,10 +2266,8 @@
           "value": null
         },
         {
-          "kind": "value",
-          "codec": "raw_voltage_5v",
-          "scale": 0.0196078431372549,
-          "precision": 2,
+          "kind": "uint",
+          "unit": "0.0196078431372549V",
           "bits": [
             [
               64,
@@ -2356,7 +2382,7 @@
           "value": null
         },
         {
-          "kind": "value",
+          "kind": "uint",
           "bits": [
             [
               48,
@@ -2475,7 +2501,7 @@
           "value": null
         },
         {
-          "kind": "value",
+          "kind": "uint",
           "bits": [
             [
               24,
@@ -2486,7 +2512,7 @@
           "value": null
         },
         {
-          "kind": "value",
+          "kind": "uint",
           "bits": [
             [
               16,
@@ -2497,7 +2523,7 @@
           "value": null
         },
         {
-          "kind": "value",
+          "kind": "uint",
           "bits": [
             [
               8,
@@ -2508,7 +2534,7 @@
           "value": null
         },
         {
-          "kind": "value",
+          "kind": "uint",
           "bits": [
             [
               0,
@@ -2920,7 +2946,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "V",
           "value": null
         }
@@ -2933,7 +2959,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "V",
           "value": null
         }
@@ -2946,10 +2972,8 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "scale": 0.1,
-          "precision": 1,
-          "unit": "V",
+          "kind": "uint",
+          "unit": "0.1V",
           "value": null
         }
       ]
@@ -2961,10 +2985,8 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "scale": 0.1,
-          "precision": 1,
-          "unit": "V",
+          "kind": "uint",
+          "unit": "0.1V",
           "value": null
         }
       ]
@@ -2999,8 +3021,7 @@
       "label": "IMU 加速度 X",
       "content": [
         {
-          "kind": "value",
-          "codec": "signed_integer",
+          "kind": "int",
           "unit": "mg"
         }
       ]
@@ -3011,8 +3032,7 @@
       "label": "IMU 加速度 Y",
       "content": [
         {
-          "kind": "value",
-          "codec": "signed_integer",
+          "kind": "int",
           "unit": "mg"
         }
       ]
@@ -3023,8 +3043,7 @@
       "label": "IMU 加速度 Z",
       "content": [
         {
-          "kind": "value",
-          "codec": "signed_integer",
+          "kind": "int",
           "unit": "mg"
         }
       ]
@@ -3035,11 +3054,8 @@
       "label": "IMU 角速度 X",
       "content": [
         {
-          "kind": "value",
-          "codec": "signed_integer",
-          "scale": 0.1,
-          "precision": 1,
-          "unit": "dps"
+          "kind": "int",
+          "unit": "0.1dps"
         }
       ]
     },
@@ -3049,11 +3065,8 @@
       "label": "IMU 角速度 Y",
       "content": [
         {
-          "kind": "value",
-          "codec": "signed_integer",
-          "scale": 0.1,
-          "precision": 1,
-          "unit": "dps"
+          "kind": "int",
+          "unit": "0.1dps"
         }
       ]
     },
@@ -3063,11 +3076,8 @@
       "label": "IMU 角速度 Z",
       "content": [
         {
-          "kind": "value",
-          "codec": "signed_integer",
-          "scale": 0.1,
-          "precision": 1,
-          "unit": "dps"
+          "kind": "int",
+          "unit": "0.1dps"
         }
       ]
     },
@@ -3077,11 +3087,8 @@
       "label": "整车 Z 轴转向角速度",
       "content": [
         {
-          "kind": "value",
-          "codec": "signed_integer",
-          "scale": 0.1,
-          "precision": 1,
-          "unit": "dps"
+          "kind": "int",
+          "unit": "0.1dps"
         }
       ]
     },
@@ -3166,8 +3173,8 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "hex_value",
+          "kind": "uint",
+          "bits": [[8, 15]],
           "value": null
         }
       ]
@@ -3179,8 +3186,8 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "hex_value",
+          "kind": "uint",
+          "bits": [[0, 7]],
           "value": null
         }
       ]
@@ -3192,7 +3199,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "m",
           "value": null
         }
@@ -3205,7 +3212,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "value": null
         }
       ]
@@ -3480,8 +3487,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "signal_4g",
+          "kind": "uint",
           "value": null
         }
       ]
@@ -3493,8 +3499,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "gps_signal",
+          "kind": "uint",
           "value": null
         }
       ]
@@ -3506,7 +3511,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "value": null
         }
       ]
@@ -3518,8 +3523,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "signed_integer",
+          "kind": "int",
           "unit": "℃",
           "value": null
         }
@@ -3532,8 +3536,23 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "bluetooth_status",
+          "kind": "select",
+          "bits": [
+            [
+              8,
+              15
+            ]
+          ],
+          "options": [
+            {
+              "value": 0,
+              "label": "未连接"
+            },
+            {
+              "value": 1,
+              "label": "已连接"
+            }
+          ],
           "value": null
         }
       ]
@@ -3545,7 +3564,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "秒",
           "value": null
         }
@@ -3558,7 +3577,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "分钟",
           "value": null
         }
@@ -3571,7 +3590,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "秒",
           "value": null
         }
@@ -3584,7 +3603,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "%",
           "value": null
         }
@@ -3645,7 +3664,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "秒",
           "value": null
         }
@@ -3681,9 +3700,11 @@
       "label": "伴我回家延时",
       "content": [
         {
-          "kind": "value",
-          "min": 3,
-          "max": 60,
+          "kind": "uint",
+          "minmax": [
+            3,
+            60
+          ],
           "unit": "秒"
         }
       ]
@@ -3694,9 +3715,11 @@
       "label": "锂电车续航总里程",
       "content": [
         {
-          "kind": "value",
-          "min": 0,
-          "max": 10000,
+          "kind": "uint",
+          "minmax": [
+            0,
+            10000
+          ],
           "unit": "km"
         }
       ]
@@ -3704,13 +3727,15 @@
     "413": {
       "bytes": 2,
       "writable": false,
-      "label": "前轮胎压值（0xFFFF无效值）",
+      "label": "前轮胎压值",
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "min": 0,
-          "max": 1275,
+          "kind": "uint",
+          "minmax": [
+            0,
+            12.75
+          ],
           "unit": "0.01bar",
           "value": null
         }
@@ -3723,8 +3748,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "signed_i8",
+          "kind": "int",
           "bits": [
             [
               8,
@@ -3788,14 +3812,14 @@
           "value": null
         },
         {
-          "kind": "value",
+          "kind": "uint",
           "bits": [
             [
               4,
               7
             ]
           ],
-          "label": "保留位（应为0）",
+          "label": "保留位",
           "value": null
         }
       ]
@@ -3803,13 +3827,15 @@
     "415": {
       "bytes": 2,
       "writable": false,
-      "label": "后轮胎压值（0xFFFF无效值）",
+      "label": "后轮胎压值",
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "min": 0,
-          "max": 1275,
+          "kind": "uint",
+          "minmax": [
+            0,
+            12.75
+          ],
           "unit": "0.01bar",
           "value": null
         }
@@ -3822,8 +3848,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
-          "codec": "signed_i8",
+          "kind": "int",
           "bits": [
             [
               8,
@@ -3887,7 +3912,7 @@
           "value": null
         },
         {
-          "kind": "value",
+          "kind": "uint",
           "bits": [
             [
               4,
@@ -3932,7 +3957,7 @@
       "rawHex": null,
       "content": [
         {
-          "kind": "value",
+          "kind": "uint",
           "unit": "张",
           "value": null
         }

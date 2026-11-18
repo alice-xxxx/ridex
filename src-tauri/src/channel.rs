@@ -141,7 +141,7 @@ impl AnyChannel {
             DiscoverRequest::Ble {
                 timeout_ms,
                 service_uuid,
-            } => ble::BleChannel::discover(timeout_ms, service_uuid.as_deref())
+            } => ble::BleChannel::discover(app, timeout_ms, service_uuid.as_deref())
                 .await
                 .map(|devices| devices.into_iter().map(DiscoveredDevice::Ble).collect())
                 .map_err(|error| error.to_string()),

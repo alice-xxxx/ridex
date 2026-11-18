@@ -101,7 +101,7 @@ textarea {
 }
 
 @media (min-width: 768px) {
-  .page:not(.comm-page-fill)::after {
+  .page:not(.comm-page-fill):not(.component-status-page)::after {
     content: "";
     display: block;
     height: var(--floating-nav-clearance);

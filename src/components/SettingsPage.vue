@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from "vue"
+import { isTauri } from "@tauri-apps/api/core"
+import { platform, version as systemVersion } from "@tauri-apps/plugin-os"
 import { version as appVersion } from "../../package.json"
 import { parseStatusData } from "../registers/codec"
 import { applyComponentCatalog, devices, resetComponentCatalog } from "../registers/components"
@@ -8,12 +10,20 @@ import { tauriApi } from "../services/tauri"
 import { useComponentStatusStore } from "../stores/componentStatus"
 import { useSessionStore } from "../stores/session"
 import type { ActiveView, ComponentCatalog, ComponentId } from "../types"
+import SubpageHeader from "./SubpageHeader.vue"
 
 const props = defineProps<{ section: ActiveView; deviceId: string }>()
 const emit = defineEmits<{ openTool: [mode: "convert" | "4g"] }>()
 
 const session = useSessionStore()
 const status = useComponentStatusStore()
+const native = isTauri()
+const os = native ? platform() : "web"
+const platformName = ({
+  android: "Android", ios: "iOS", windows: "Windows",
+  macos: "macOS", linux: "Linux", web: "浏览器",
+} as Record<string, string>)[os] ?? os
+const osVersion = native ? systemVersion() : ""
 const components = devices.filter((device) => device.fileName).map((device) => ({
   id: device.name as ComponentId,
   fileName: device.fileName!,
@@ -104,7 +114,6 @@ async function clearCatalog(id: ComponentId, fileName: string) {
 <template>
   <section class="page settings-page">
     <template v-if="section === 'settings'">
-      <h1>设置</h1>
       <div class="settings-list">
         <button type="button" @click="emit('openTool', 'convert')">本地转换</button>
         <button type="button" @click="emit('openTool', '4g')">4G OTA</button>
@@ -114,10 +123,8 @@ async function clearCatalog(id: ComponentId, fileName: string) {
     </template>
 
     <template v-else>
-      <div class="settings-heading">
-        <button type="button" class="btn btn-outline btn-sm" @click="session.goTo('settings')">返回</button>
-        <h1>{{ section === 'about' ? '关于' : '导入配置' }}</h1>
-      </div>
+      <SubpageHeader :title="section === 'about' ? '关于' : '导入配置'" back-label="返回设置"
+        @back="session.goTo('settings')" />
 
       <div v-if="section === 'import-config'" class="catalog-list">
         <input ref="importInput" type="file" accept=".json,application/json" hidden @change="importCatalog" />
@@ -143,8 +150,10 @@ async function clearCatalog(id: ComponentId, fileName: string) {
 
       <div v-if="section === 'about'" class="settings-detail about-detail">
         <strong>RideX</strong>
-        <div><span>版本</span><span>{{ appVersion }}</span></div>
-        <div><span>设备 ID</span><span class="device-id">{{ deviceId || '未获取' }}</span></div>
+        <div><span>应用版本</span><span>{{ appVersion }}</span></div>
+        <div><span>运行平台</span><span>{{ platformName }}</span></div>
+        <div v-if="osVersion"><span>系统版本</span><span>{{ osVersion }}</span></div>
+        <div><span>设备 ID</span><span>{{ deviceId || '未获取' }}</span></div>
       </div>
     </template>
   </section>
@@ -154,12 +163,6 @@ async function clearCatalog(id: ComponentId, fileName: string) {
 .settings-page {
   width: min(100%, 40rem);
   margin: 0 auto;
-}
-
-h1 {
-  margin: 0 0 1.25rem;
-  font-size: 1.35rem;
-  line-height: 1.3;
 }
 
 .settings-list,
@@ -203,17 +206,6 @@ h1 {
   border-right: 1.5px solid var(--text-muted);
   content: "";
   transform: rotate(45deg);
-}
-
-.settings-heading {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-}
-
-.settings-heading h1 {
-  margin: 0;
 }
 
 .settings-detail {
@@ -291,10 +283,12 @@ h1 {
 }
 
 .about-detail > div span:first-child {
+  flex-shrink: 0;
   color: var(--text-secondary);
 }
 
-.device-id {
+.about-detail > div span:last-child {
+  min-width: 0;
   overflow-wrap: anywhere;
   text-align: right;
 }

@@ -1,0 +1,3 @@
+[default]
+description = "Query system-connected BLE devices by service UUID."
+permissions = ["allow-connected-devices"]

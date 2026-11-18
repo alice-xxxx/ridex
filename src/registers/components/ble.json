@@ -579,7 +579,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "text",
+                    "kind": "string",
                     "value": null
                 }
             ]
@@ -591,7 +591,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "text",
+                    "kind": "string",
                     "value": null
                 }
             ]
@@ -603,7 +603,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "text",
+                    "kind": "string",
                     "value": null
                 }
             ]
@@ -615,8 +615,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
-                    "codec": "version_2byte",
+                    "kind": "version",
                     "value": null
                 }
             ]
@@ -628,8 +627,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
-                    "codec": "version_2byte",
+                    "kind": "version",
                     "value": null
                 }
             ]
@@ -641,8 +639,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
-                    "codec": "version_2byte",
+                    "kind": "version",
                     "value": null
                 }
             ]
@@ -654,8 +651,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
-                    "codec": "version_2byte",
+                    "kind": "version",
                     "value": null
                 }
             ]
@@ -667,7 +663,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -679,7 +675,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -691,7 +687,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -703,7 +699,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -715,7 +711,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -727,7 +723,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -739,7 +735,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -751,7 +747,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -763,7 +759,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -775,7 +771,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -787,7 +783,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -799,7 +795,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -811,7 +807,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -883,7 +879,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -895,7 +891,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -907,7 +903,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -919,7 +915,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -931,7 +927,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -943,7 +939,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -955,7 +951,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -967,7 +963,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -979,7 +975,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -991,7 +987,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -1027,7 +1023,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -1039,7 +1035,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]
@@ -1099,7 +1095,7 @@
             "rawHex": null,
             "content": [
                 {
-                    "kind": "value",
+                    "kind": "uint",
                     "value": null
                 }
             ]

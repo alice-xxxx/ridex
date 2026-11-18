@@ -9,6 +9,8 @@
     "core:default",
     "log:default",
     "dialog:default",
+    "navigation:default",
+    "system-ble:default",
     "fs:default",
     {
       "identifier": "fs:scope",

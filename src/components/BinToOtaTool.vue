@@ -5,6 +5,8 @@ import { tauriApi } from "../services/tauri"
 import { useSessionStore } from "../stores/session"
 import { displayFileName } from "../utils/displayFileName"
 import FourGOtaPanel from "./FourGOtaPanel.vue"
+import SubpageHeader from "./SubpageHeader.vue"
+
 const props = defineProps<{ deviceId: string; initialMode: "convert" | "4g"; fourGVisited: boolean }>()
 
 const session = useSessionStore()
@@ -40,10 +42,6 @@ const chooseFirmware = async () => {
   tool.inputPath = path
 }
 
-const leaveTool = () => {
-  session.goTo("settings")
-}
-
 const convert = async () => {
   tool.error = ""
   tool.result = ""
@@ -75,10 +73,8 @@ const convert = async () => {
 
 <template>
   <section class="page bin-ota-page">
-    <div class="tool-toolbar">
-      <button type="button" class="btn btn-outline btn-sm page-back" @click="leaveTool">返回</button>
-      <h1>{{ props.initialMode === 'convert' ? '本地转换' : '4G OTA' }}</h1>
-    </div>
+    <SubpageHeader :title="props.initialMode === 'convert' ? '本地转换' : '4G OTA'" back-label="返回设置"
+      @back="session.goTo('settings')" />
 
     <div v-show="props.initialMode === 'convert'" class="bin-ota-tool">
       <div class="bin-ota-body">
@@ -144,25 +140,6 @@ const convert = async () => {
   display: flex;
   flex: 1;
   flex-direction: column;
-}
-
-.tool-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.tool-toolbar h1 {
-  margin: 0;
-  font-size: 1.35rem;
-  line-height: 1.3;
-}
-
-.page-back {
-  flex: 0 0 auto;
 }
 
 .bin-ota-tool {

@@ -86,12 +86,11 @@ dependencies = [
 
 [[package]]
 name = "android-usb-serial"
-version = "0.1.0"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0801a7e188c1dd73c271ae6a005c8c5f3b4e1bd69ee120b386ef65472442f056"
+checksum = "a48507c42c7d78b400375007f56d13147938af15944e39a13d8e04dda9259c78"
 dependencies = [
  "libc",
- "log",
  "nusb",
  "serialport",
 ]
@@ -400,6 +399,8 @@ dependencies = [
 [[package]]
 name = "blec"
 version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "959cb845d4b101fad6558eabd4d7bd777c2cf4c3daa082da41e7b4ce586ad2c4"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -416,7 +417,6 @@ dependencies = [
  "tokio-stream",
  "tracing",
  "uuid",
- "windows 0.62.2",
 ]
 
 [[package]]
@@ -1366,7 +1366,7 @@ dependencies = [
  "rustc_version",
  "toml 1.1.2+spec-1.1.0",
  "vswhom",
- "winreg",
+ "winreg 0.55.0",
 ]
 
 [[package]]
@@ -2673,20 +2673,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "112b39cec0b298b6c1999fee3e31427f74f676e4cb9879ed1a121b43661a4154"
 
 [[package]]
-name = "mac-notification-sys"
-version = "0.6.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd604973958ddcc11b561193c0fb96ba146506ef2f231ef2e7c35fd2cbc9beca"
-dependencies = [
- "cc",
- "log",
- "objc2",
- "objc2-foundation",
- "time",
- "uuid",
-]
-
-[[package]]
 name = "mach2"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2862,20 +2848,6 @@ dependencies = [
  "cfg-if",
  "cfg_aliases",
  "libc",
-]
-
-[[package]]
-name = "notify-rust"
-version = "4.18.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4587364a9a0074333429b3df75a30a205340c56a536ca3eb6ca0e59b87bbf8af"
-dependencies = [
- "futures-lite",
- "log",
- "mac-notification-sys",
- "serde",
- "tauri-winrt-notification",
- "zbus",
 ]
 
 [[package]]
@@ -3670,18 +3642,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5ca0ecfa931c29007047d1bc58e623ab12e5590e8c7cc53200d5202b69266d8a"
 dependencies = [
  "libc",
- "rand_chacha 0.3.1",
+ "rand_chacha",
  "rand_core 0.6.4",
-]
-
-[[package]]
-name = "rand"
-version = "0.9.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9ef1d0d795eb7d84685bca4f72f3649f064e6641543d3a8c415898726a57b41"
-dependencies = [
- "rand_chacha 0.9.0",
- "rand_core 0.9.5",
 ]
 
 [[package]]
@@ -3706,31 +3668,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "rand_chacha"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3022b5f1df60f26e1ffddd6c66e8aa15de382ae63b3a0c1bfc0e4d3e3f325cb"
-dependencies = [
- "ppv-lite86",
- "rand_core 0.9.5",
-]
-
-[[package]]
 name = "rand_core"
 version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom 0.2.17",
-]
-
-[[package]]
-name = "rand_core"
-version = "0.9.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76afc826de14238e6e8c374ddcc1fa19e374fd8dd986b0d2af0d02377261d83c"
-dependencies = [
- "getrandom 0.3.4",
 ]
 
 [[package]]
@@ -3816,6 +3759,12 @@ dependencies = [
  "memchr",
  "regex-syntax",
 ]
+
+[[package]]
+name = "regex-lite"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cab834c73d247e67f4fae452806d17d3c7501756d98c8808d7c9c7aa7d18f973"
 
 [[package]]
 name = "regex-syntax"
@@ -3948,14 +3897,11 @@ dependencies = [
  "aes-gcm",
  "base64 0.22.1",
  "bin_file",
- "block2",
  "chrono",
  "crc",
  "crossbeam-queue",
  "ecb",
  "md5",
- "objc2",
- "objc2-ui-kit",
  "p256",
  "rand 0.10.1",
  "reqwest 0.12.28",
@@ -3966,15 +3912,18 @@ dependencies = [
  "sha2",
  "tauri",
  "tauri-build",
+ "tauri-plugin-app-installer",
  "tauri-plugin-blec",
  "tauri-plugin-dialog",
  "tauri-plugin-fs",
  "tauri-plugin-log",
  "tauri-plugin-machine-uid",
- "tauri-plugin-notification",
+ "tauri-plugin-mobile-ui",
+ "tauri-plugin-navigation",
  "tauri-plugin-opener",
  "tauri-plugin-os",
  "tauri-plugin-serialplugin",
+ "tauri-plugin-system-ble",
  "tokio",
  "uuid",
  "zeroize",
@@ -4403,6 +4352,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "serial-codec"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b6f85ec634fad2518ce44d55734f715c23c5a307682c85223a0c9346ec35b96"
+dependencies = [
+ "regex-lite",
+ "serde",
+]
+
+[[package]]
 name = "serialize-to-javascript"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4425,10 +4384,28 @@ dependencies = [
 ]
 
 [[package]]
-name = "serialport"
-version = "4.9.0"
+name = "serialplugin-core"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4d91116f97173694f1642263b2ff837f80d933aa837e2314969f6728f661df3"
+checksum = "ad847ca8b3473bdd792e0062b3a4bf8caad1c904bb3dfc15a4e658da961edb63"
+dependencies = [
+ "android-usb-serial",
+ "jni 0.21.1",
+ "log",
+ "serde",
+ "serde_json",
+ "serial-codec",
+ "serialport",
+ "socket2",
+ "tauri",
+ "winreg 0.56.0",
+]
+
+[[package]]
+name = "serialport"
+version = "4.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6ba5f8f29aa20853c4e3e85a33ec580eb66be1f057142e77a333834a318bacf2"
 dependencies = [
  "bitflags 2.13.2",
  "cfg-if",
@@ -4976,8 +4953,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-app-installer"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+]
+
+[[package]]
 name = "tauri-plugin-blec"
 version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b0300f2b0e709ea8b20db6202ae166a92c1c78d1a74ff0f9035a0a7c20b2714"
 dependencies = [
  "blec",
  "tauri",
@@ -5068,22 +5056,25 @@ dependencies = [
 ]
 
 [[package]]
-name = "tauri-plugin-notification"
-version = "2.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad2fd40946aef810c4be9fd33a2d1b9b397cb79042b2d21c81a0a8f204354fd1"
+name = "tauri-plugin-mobile-ui"
+version = "0.1.0"
 dependencies = [
- "log",
- "notify-rust",
- "rand 0.9.5",
- "serde",
- "serde_json",
- "serde_repr",
  "tauri",
  "tauri-plugin",
- "thiserror 2.0.21",
- "time",
- "url",
+]
+
+[[package]]
+name = "tauri-plugin-navigation"
+version = "0.1.0"
+dependencies = [
+ "objc2-web-kit",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "tokio",
+ "webkit2gtk",
+ "webview2-com",
+ "windows-core 0.61.2",
 ]
 
 [[package]]
@@ -5128,18 +5119,30 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-serialplugin"
-version = "3.0.1"
+version = "4.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e37c27de2513110b004510e9cc98acd57a89ab7b363639f0a68e8b6d63f08ae3"
+checksum = "4f58ea596175b4cd090346623c72cac84a0fa3466b6e0d8d3f493ff1f585ad34"
 dependencies = [
- "android-usb-serial",
- "jni 0.21.1",
  "log",
  "serde",
  "serde_json",
- "serialport",
+ "serial-codec",
+ "serialplugin-core",
  "tauri",
  "tauri-plugin",
+]
+
+[[package]]
+name = "tauri-plugin-system-ble"
+version = "0.1.0"
+dependencies = [
+ "btleplug",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "tokio",
+ "uuid",
 ]
 
 [[package]]
@@ -5257,17 +5260,6 @@ dependencies = [
  "dunce",
  "embed-resource",
  "toml 1.1.2+spec-1.1.0",
-]
-
-[[package]]
-name = "tauri-winrt-notification"
-version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f37a6c354fd28fc9e322ed9bd47e3959576dad28c9d58ea1cf888cce1c7ccb36"
-dependencies = [
- "thiserror 2.0.21",
- "windows 0.62.2",
- "windows-version",
 ]
 
 [[package]]
@@ -6626,6 +6618,16 @@ checksum = "cb5a765337c50e9ec252c2069be9bf91c7df47afb103b642ba3a53bf8101be97"
 dependencies = [
  "cfg-if",
  "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "winreg"
+version = "0.56.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d6f32a0ff4a9f6f01231eb2059cc85479330739333e0e58cadf03b6af2cca10"
+dependencies = [
+ "cfg-if",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]

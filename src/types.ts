@@ -222,10 +222,7 @@ export interface ContentDefinition {
   codec?: string
   value?: unknown
   unit?: string
-  min?: number
-  max?: number
-  scale?: number
-  precision?: number
+  minmax?: number[]
   bits?: BitRange[]
   writeBits?: BitRange[]
   writePrefixHex?: string
@@ -233,13 +230,6 @@ export interface ContentDefinition {
   options?: ContentOption[]
   on?: string
   off?: string
-  step?: number | string
-  maxLength?: number
-  multiplierBase?: number
-  magnitudeBits?: BitRange[]
-  signBits?: BitRange[]
-  multiplierBits?: BitRange[]
-  note?: string
 }
 
 export interface ReadBlock {
